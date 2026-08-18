@@ -1,0 +1,9 @@
+{% extends "_layouts/elementindex.twig" %}
+{% set title = "Documents"|t('book') %}
+{% set elementType = 'justinholtweb\\book\\elements\\Document' %}
+
+{% block actionButton %}
+    {% if canManage %}
+        <a href="{{ url('book/documents/new') }}" class="btn submit add icon">{{ "New document"|t('book') }}</a>
+    {% endif %}
+{% endblock %}

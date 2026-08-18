@@ -1,0 +1,375 @@
+/**
+ * Book — the front-end stylesheet.
+ *
+ * Deliberately small and deliberately unopinionated about colour: everything is expressed as a
+ * custom property on `.book`, so a site restyles a document by setting four variables rather
+ * than by fighting specificity. Turn the whole file off in the plugin settings if you would
+ * rather write your own.
+ */
+
+.book {
+    --book-border: #d9dee5;
+    --book-surface: #f6f7f9;
+    --book-text: #1f2933;
+    --book-muted: #66727f;
+    --book-accent: #2a6df4;
+    --book-radius: 6px;
+
+    margin: 0 0 1.5rem;
+    color: var(--book-text);
+    max-width: 100%;
+}
+
+@media (prefers-color-scheme: dark) {
+    .book {
+        --book-border: #333c46;
+        --book-surface: #1c2229;
+        --book-text: #e6eaef;
+        --book-muted: #99a4b0;
+        --book-accent: #6c9bff;
+    }
+}
+
+.book--align-left { margin-right: auto; }
+.book--align-right { margin-left: auto; }
+.book--align-center { margin-left: auto; margin-right: auto; }
+.book--align-wide { max-width: min(100%, 76rem); margin-left: auto; margin-right: auto; }
+.book--align-full { max-width: none; }
+
+/* Toolbar ------------------------------------------------------------------ */
+
+.book-toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    flex-wrap: wrap;
+    padding: 0.5rem 0.75rem;
+    background: var(--book-surface);
+    border: 1px solid var(--book-border);
+    border-bottom: 0;
+    border-radius: var(--book-radius) var(--book-radius) 0 0;
+    font-size: 0.875rem;
+}
+
+.book-toolbar__title {
+    font-weight: 600;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.book-toolbar__meta {
+    margin-left: 0.5rem;
+    font-weight: 400;
+    color: var(--book-muted);
+}
+
+.book-toolbar__actions {
+    display: flex;
+    align-items: center;
+    gap: 0.375rem;
+}
+
+.book-btn {
+    display: inline-block;
+    padding: 0.3rem 0.7rem;
+    border: 1px solid var(--book-border);
+    border-radius: calc(var(--book-radius) - 2px);
+    background: transparent;
+    color: inherit;
+    font: inherit;
+    font-size: 0.8125rem;
+    line-height: 1.4;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+.book-btn:hover,
+.book-btn:focus-visible {
+    border-color: var(--book-accent);
+    color: var(--book-accent);
+}
+
+.book-btn--primary {
+    background: var(--book-accent);
+    border-color: var(--book-accent);
+    color: #fff;
+}
+
+.book-btn--primary:hover,
+.book-btn--primary:focus-visible {
+    color: #fff;
+    filter: brightness(1.08);
+}
+
+/* Stage -------------------------------------------------------------------- */
+
+.book-stage {
+    position: relative;
+    width: 100%;
+    border: 1px solid var(--book-border);
+    border-radius: var(--book-radius);
+    background: var(--book-surface);
+    overflow: hidden;
+}
+
+.book-toolbar + .book-stage {
+    border-radius: 0 0 var(--book-radius) var(--book-radius);
+}
+
+.book-stage > iframe {
+    display: block;
+    width: 100%;
+    height: 100%;
+    border: 0;
+}
+
+.book-image,
+.book-media {
+    display: block;
+    width: 100%;
+    height: auto;
+}
+
+/* Fullscreen: the stage grows, and the frame inside it has to be told to follow —
+   a percentage height inside a fixed-position element resolves against nothing. */
+.book-stage:fullscreen {
+    height: 100%;
+    aspect-ratio: auto;
+    border-radius: 0;
+}
+
+.book-stage:fullscreen > iframe {
+    height: 100%;
+}
+
+/* Loader and fallback ------------------------------------------------------- */
+
+.book-loader {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    pointer-events: none;
+}
+
+.book-loader > span {
+    width: 1.75rem;
+    height: 1.75rem;
+    border: 2px solid var(--book-border);
+    border-top-color: var(--book-accent);
+    border-radius: 50%;
+    animation: book-spin 0.8s linear infinite;
+}
+
+@keyframes book-spin {
+    to { transform: rotate(360deg); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .book-loader > span { animation-duration: 3s; }
+}
+
+.book-fallback {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.75rem;
+    padding: 1.5rem;
+    background: var(--book-surface);
+    text-align: center;
+}
+
+.book-fallback[hidden] { display: none; }
+
+.book-fallback__title {
+    margin: 0;
+    color: var(--book-muted);
+}
+
+.book-error {
+    margin: 0.5rem 0 0;
+    font-size: 0.8125rem;
+    color: #b3261e;
+}
+
+/* Download card ------------------------------------------------------------- */
+
+.book-card {
+    display: flex;
+    align-items: center;
+    gap: 0.875rem;
+    padding: 0.875rem 1rem;
+    color: inherit;
+    text-decoration: none;
+    max-width: 32rem;
+}
+
+.book-stage > .book-card { width: 100%; }
+
+.book-card__badge {
+    flex: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 3rem;
+    padding: 0.5rem 0.375rem;
+    border-radius: calc(var(--book-radius) - 2px);
+    background: var(--book-accent);
+    color: #fff;
+    font-size: 0.6875rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+}
+
+.book-card__text {
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+}
+
+.book-card__title {
+    font-weight: 600;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.book-card__meta {
+    font-size: 0.8125rem;
+    color: var(--book-muted);
+}
+
+.book-card__action {
+    margin-left: auto;
+    flex: none;
+    font-size: 0.8125rem;
+    color: var(--book-accent);
+}
+
+/* Consent ------------------------------------------------------------------- */
+
+.book-consent {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    padding: 1.5rem;
+    border: 0;
+    background: var(--book-surface) center/cover no-repeat;
+    color: inherit;
+    font: inherit;
+    text-align: center;
+    cursor: pointer;
+}
+
+.book-consent__inner {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+    max-width: 30rem;
+    padding: 1rem 1.25rem;
+    border-radius: var(--book-radius);
+    background: color-mix(in srgb, var(--book-surface) 85%, transparent);
+}
+
+.book-consent__title { font-weight: 600; }
+
+.book-consent__text {
+    font-size: 0.875rem;
+    color: var(--book-muted);
+}
+
+.book-consent__button {
+    margin-top: 0.25rem;
+    padding: 0.375rem 0.9rem;
+    border-radius: calc(var(--book-radius) - 2px);
+    background: var(--book-accent);
+    color: #fff;
+    font-size: 0.875rem;
+}
+
+/* Inline rendering ---------------------------------------------------------- */
+
+.book-inline {
+    padding: 1rem 1.25rem;
+    background: transparent;
+}
+
+.book-inline__scroll {
+    overflow-x: auto;
+    max-width: 100%;
+}
+
+.book-inline__note,
+.book-inline__empty {
+    margin: 0.75rem 0 0;
+    font-size: 0.8125rem;
+    color: var(--book-muted);
+}
+
+.book-table {
+    border-collapse: collapse;
+    width: 100%;
+    font-size: 0.875rem;
+}
+
+.book-table th,
+.book-table td {
+    padding: 0.4rem 0.65rem;
+    border: 1px solid var(--book-border);
+    text-align: left;
+    vertical-align: top;
+}
+
+.book-table th {
+    background: var(--book-surface);
+    font-weight: 600;
+    position: sticky;
+    top: 0;
+}
+
+.book-code {
+    margin: 0;
+    padding: 0.25rem 0;
+    overflow-x: auto;
+    font-size: 0.8125rem;
+    line-height: 1.55;
+    tab-size: 4;
+}
+
+.book-code--wrap {
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+}
+
+.book-inline__prose > :first-child { margin-top: 0; }
+.book-inline__prose > :last-child { margin-bottom: 0; }
+
+/* Caption and warnings ------------------------------------------------------ */
+
+.book-caption {
+    margin: 0.5rem 0 0;
+    font-size: 0.875rem;
+    color: var(--book-muted);
+}
+
+.book-warnings {
+    margin-top: 0.5rem;
+    padding: 0.5rem 0.75rem;
+    border-left: 3px solid #d99b1c;
+    background: color-mix(in srgb, #d99b1c 10%, transparent);
+    font-size: 0.8125rem;
+}
+
+.book-warnings p { margin: 0 0 0.25rem; }
+.book-warnings p:last-child { margin-bottom: 0; }

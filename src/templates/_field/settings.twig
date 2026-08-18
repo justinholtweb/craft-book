@@ -1,0 +1,36 @@
+{% import "_includes/forms.twig" as forms %}
+
+{{ forms.checkboxSelectField({
+    label: "Options authors may set"|t('book'),
+    instructions: "Everything else uses this field’s defaults, or Book’s. Fewer choices on an entry screen is usually the right answer — the defaults are here."|t('book'),
+    id: 'enabledOptions',
+    name: 'enabledOptions',
+    options: optionChoices,
+    values: field.enabledOptions,
+}) }}
+
+{{ forms.checkboxSelectField({
+    label: "Asset volumes"|t('book'),
+    instructions: "Which volumes the file picker offers. Leave all unchecked for every volume."|t('book'),
+    id: 'sources',
+    name: 'sources',
+    options: volumeOptions,
+    values: field.sources,
+    showAllOption: false,
+}) }}
+
+{{ forms.editableTableField({
+    label: "Default options"|t('book'),
+    instructions: "Applied to a new value in this field. Written the way a reference tag writes them: `viewer` / `google`, `height` / `900`."|t('book'),
+    id: 'defaultOptions',
+    name: 'defaultOptions',
+    cols: {
+        key: { heading: "Option"|t('book'), type: 'singleline', class: 'code' },
+        value: { heading: "Value"|t('book'), type: 'singleline', class: 'code' },
+    },
+    rows: field.defaultOptionRows,
+    addRowLabel: "Add an option"|t('book'),
+    allowAdd: true,
+    allowDelete: true,
+    allowReorder: false,
+}) }}

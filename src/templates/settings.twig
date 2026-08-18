@@ -1,0 +1,146 @@
+{% import "_includes/forms.twig" as forms %}
+
+<div class="readable">
+    <blockquote class="note">
+        <p>{{ "Book never makes an outbound HTTP request. The Google and Microsoft viewers are URLs the reader’s browser loads, and Book’s own rendering reads files out of your asset volumes — nothing here fetches a URL from your server."|t('book') }}</p>
+    </blockquote>
+</div>
+
+<h2>{{ "Viewers"|t('book') }}</h2>
+
+{{ forms.lightswitchField({
+    label: "Allow the Google viewer"|t('book'),
+    instructions: "docs.google.com renders almost any format. Turning this off means Google never receives a document URL from this site — and that Book will not offer it, automatically or otherwise."|t('book'),
+    id: 'allowGoogleViewer',
+    name: 'settings[allowGoogleViewer]',
+    on: settings.allowGoogleViewer,
+}) }}
+
+{{ forms.lightswitchField({
+    label: "Allow the Microsoft Office viewer"|t('book'),
+    instructions: "view.officeapps.live.com renders Word, Excel and PowerPoint files better than anything else does. Same trade: Microsoft’s servers download the file."|t('book'),
+    id: 'allowOfficeViewer',
+    name: 'settings[allowOfficeViewer]',
+    on: settings.allowOfficeViewer,
+}) }}
+
+{{ forms.lightswitchField({
+    label: "Check that URLs are publicly reachable"|t('book'),
+    instructions: "Stops Book handing a `.ddev.site`, `.test` or private-network URL to a viewer that fetches it from its own servers — the usual cause of a blank viewer on a staging site."|t('book'),
+    id: 'checkPublicUrl',
+    name: 'settings[checkPublicUrl]',
+    on: settings.checkPublicUrl,
+}) }}
+
+<hr>
+
+<h2>{{ "Serving files"|t('book') }}</h2>
+
+{{ forms.lightswitchField({
+    label: "Serve assets through Craft"|t('book'),
+    instructions: "Off, a public asset is embedded at its own volume URL. On, every file goes through Book’s route instead — slower, and worth it when the volume path is something you would rather not publish. A volume with no public URLs always goes through Craft regardless."|t('book'),
+    id: 'serveAssetsThroughCraft',
+    name: 'settings[serveAssetsThroughCraft]',
+    on: settings.serveAssetsThroughCraft,
+}) }}
+
+{{ forms.lightswitchField({
+    label: "Sign file URLs"|t('book'),
+    instructions: "Adds an expiring signature to the URLs Book serves. Note the consequence: the Google and Microsoft viewers fetch the file from their own servers, so a signature that expires takes those embeds with it."|t('book'),
+    id: 'signedUrls',
+    name: 'settings[signedUrls]',
+    on: settings.signedUrls,
+    toggle: 'book-signed',
+}) }}
+
+<div id="book-signed" class="{{ not settings.signedUrls ? 'hidden' }}">
+    {{ forms.textField({
+        label: "Signature lifetime"|t('book'),
+        instructions: "In seconds. 0 signs the URL without an expiry."|t('book'),
+        id: 'signedUrlDuration',
+        name: 'settings[signedUrlDuration]',
+        value: settings.signedUrlDuration,
+        type: 'number',
+        size: 10,
+        unit: 's',
+        errors: settings.getErrors('signedUrlDuration'),
+    }) }}
+</div>
+
+<hr>
+
+<h2>{{ "Rendered by Book"|t('book') }}</h2>
+
+{{ forms.textField({
+    label: "Inline size limit"|t('book'),
+    instructions: "The most Book will read into memory to render a CSV, Markdown, JSON or text file itself. Anything larger becomes a download card."|t('book'),
+    id: 'inlineMaxBytes',
+    name: 'settings[inlineMaxBytes]',
+    value: settings.inlineMaxBytes,
+    type: 'number',
+    size: 12,
+    unit: 'bytes',
+    errors: settings.getErrors('inlineMaxBytes'),
+}) }}
+
+{{ forms.selectField({
+    label: "HTML Purifier config"|t('book'),
+    instructions: "Used when Book renders a Markdown file, which may contain raw HTML. Files in `config/htmlpurifier/`."|t('book'),
+    id: 'purifierConfig',
+    name: 'settings[purifierConfig]',
+    value: settings.purifierConfig,
+    options: purifierConfigs,
+}) }}
+
+<hr>
+
+<h2>{{ "Front end"|t('book') }}</h2>
+
+{{ forms.lightswitchField({
+    label: "Register stylesheet"|t('book'),
+    instructions: "Book’s own CSS, added only to pages that have a document on them."|t('book'),
+    id: 'registerCss',
+    name: 'settings[registerCss]',
+    on: settings.registerCss,
+}) }}
+
+{{ forms.lightswitchField({
+    label: "Register runtime"|t('book'),
+    instructions: "The script behind click-to-load, the load timeout, fullscreen and print. Turning it off leaves plain frames that still work."|t('book'),
+    id: 'registerJs',
+    name: 'settings[registerJs]',
+    on: settings.registerJs,
+}) }}
+
+{{ forms.lightswitchField({
+    label: "Rich-text editor button"|t('book'),
+    instructions: "Adds Book’s button to CKEditor and Redactor. Documents already in content keep rendering either way — that is Craft’s reference-tag parsing, not the editor."|t('book'),
+    id: 'richTextIntegration',
+    name: 'settings[richTextIntegration]',
+    on: settings.richTextIntegration,
+}) }}
+
+<hr>
+
+<h2>{{ "What Book recognises"|t('book') }}</h2>
+
+<div class="readable">
+    <table class="data fullwidth">
+        <thead>
+            <tr>
+                <th>{{ "Format"|t('book') }}</th>
+                <th>{{ "Extensions"|t('book') }}</th>
+                <th>{{ "Shown by"|t('book') }}</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for format in formats|filter(format => format.extensions) %}
+                <tr>
+                    <td>{{ format.name }}</td>
+                    <td><code>{{ format.extensions|join(', ') }}</code></td>
+                    <td>{{ format.viewers|map(v => viewers[v].name ?? v)|join(', ') }}</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>

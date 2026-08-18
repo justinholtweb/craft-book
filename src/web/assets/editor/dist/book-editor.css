@@ -1,0 +1,79 @@
+/**
+ * Book — control panel editor styles.
+ *
+ * Only the “what will happen” panel and the field input need any: everything else on the edit
+ * screen is Craft's own form macros, deliberately.
+ */
+
+.book-verdict {
+    padding: 0.75rem 0.9rem;
+    border: 1px solid var(--hairline-color, #d5d8dc);
+    border-radius: var(--large-border-radius, 6px);
+    background: var(--gray-050, #f7f8f9);
+}
+
+.book-verdict--downgraded {
+    border-color: var(--yellow-300, #e5b95b);
+}
+
+.book-verdict__line {
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+    font-weight: 600;
+}
+
+.book-verdict__arrow {
+    color: var(--medium-text-color, #606d7b);
+}
+
+.book-verdict__note {
+    margin: 0.35rem 0 0;
+}
+
+.book-verdict__warnings {
+    margin-top: 0.5rem;
+}
+
+.book-verdict__warnings .warning {
+    margin: 0 0 0.35rem;
+    padding-left: 0.75rem;
+    border-left: 3px solid var(--yellow-500, #cf8c19);
+}
+
+.book-verdict__warnings .warning:last-child {
+    margin-bottom: 0;
+}
+
+/* The Document field ------------------------------------------------------- */
+
+.book-field > * + * {
+    margin-top: 0.75rem;
+}
+
+.book-field__verdict {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    align-items: center;
+    font-size: 0.8125rem;
+}
+
+.book-field__format,
+.book-field__viewer {
+    padding: 0.1rem 0.45rem;
+    border-radius: 999px;
+    background: var(--gray-100, #eceef0);
+}
+
+.book-field__warning {
+    flex-basis: 100%;
+    color: var(--yellow-600, #a86f0b);
+}
+
+.book-field__options {
+    padding-top: 0.5rem;
+    border-top: 1px solid var(--hairline-color, #d5d8dc);
+}

@@ -1,0 +1,372 @@
+{% extends "_layouts/cp.twig" %}
+{% import "_includes/forms.twig" as forms %}
+
+{% set fullPageForm = canManage %}
+{% set crumbs = [
+    { label: "Book"|t('book'), url: url('book') },
+    { label: "Documents"|t('book'), url: url('book/documents') },
+] %}
+{% set selectedSubnavItem = 'documents' %}
+
+{% do view.registerAssetBundle('justinholtweb\\book\\web\\assets\\editor\\EditorAsset') %}
+
+{% block actionButton %}
+    {% if canManage %}
+        <div class="buttons">
+            <button type="submit" class="btn submit">{{ "Save"|t('app') }}</button>
+        </div>
+    {% endif %}
+{% endblock %}
+
+{% block content %}
+    <input type="hidden" name="action" value="book/documents/save">
+    {{ redirectInput('book/documents') }}
+    {% if document.id %}<input type="hidden" name="documentId" value="{{ document.id }}">{% endif %}
+
+    <div id="book-edit"
+         data-resolve-url="{{ actionUrl('book/documents/resolve') }}"
+         data-preview-url="{{ actionUrl('book/documents/preview') }}">
+
+        {{ forms.textField({
+            first: true,
+            label: "Title"|t('app'),
+            instructions: "What this document is called on the page. Book uses the file’s name when you leave it blank."|t('book'),
+            id: 'title',
+            name: 'title',
+            value: document.title,
+            errors: document.getErrors('title'),
+            autofocus: true,
+        }) }}
+
+        <h2>{{ "The file"|t('book') }}</h2>
+
+        {{ forms.elementSelectField({
+            label: "File"|t('book'),
+            instructions: "A file in this site. Book can show it even from a volume with no public URLs — it serves the file itself."|t('book'),
+            id: 'assetId',
+            name: 'assetId',
+            elementType: 'craft\\elements\\Asset',
+            selectionLabel: "Choose a file"|t('book'),
+            limit: 1,
+            elements: document.asset ? [document.asset] : [],
+            errors: document.getErrors('assetId'),
+        }) }}
+
+        {{ forms.textField({
+            label: "…or a URL"|t('book'),
+            instructions: "Somebody else’s file. Book passes the URL along without ever fetching it."|t('book'),
+            id: 'url',
+            name: 'url',
+            value: document.url,
+            type: 'url',
+            placeholder: 'https://…/report.pdf',
+            class: 'code',
+            errors: document.getErrors('url'),
+        }) }}
+
+        {# What is actually going to happen. Filled in by the editor script every time the file
+           or the viewer changes, so nobody finds out on the live site. #}
+        <div class="field">
+            <div class="heading"><label>{{ "What will happen"|t('book') }}</label></div>
+            <div class="input">
+                <div id="book-verdict" class="book-verdict {{ not resolution ? 'hidden' }}">
+                    <p class="book-verdict__line">
+                        <span class="book-verdict__format">{{ format.name }}</span>
+                        <span class="book-verdict__arrow">→</span>
+                        <span class="book-verdict__viewer">{{ resolution ? (viewers[resolution.viewer].name ?? resolution.viewer) : '' }}</span>
+                    </p>
+                    <p class="book-verdict__note light">{{ resolution ? (viewers[resolution.viewer].note ?? '') : '' }}</p>
+                    <div class="book-verdict__warnings">
+                        {% for warning in resolution ? resolution.warnings : [] %}
+                            <p class="warning">{{ warning }}</p>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <hr>
+
+        <h2>{{ "How it shows"|t('book') }}</h2>
+
+        {{ forms.selectField({
+            label: "Viewer"|t('book'),
+            instructions: "Automatic picks the best one that works for this file, here, with these settings."|t('book'),
+            id: 'viewer',
+            name: 'options[viewer]',
+            value: options.viewer,
+            options: viewerChoices,
+            errors: document.getErrors('viewer'),
+        }) }}
+
+        {{ forms.lightswitchField({
+            label: "Fall back when that viewer cannot be used"|t('book'),
+            instructions: "On, a document that cannot be shown the way you asked is shown another way rather than not at all. Off, it becomes a download card and the reason appears above."|t('book'),
+            id: 'fallback',
+            name: 'options[fallback]',
+            on: options.fallback,
+        }) }}
+
+        {{ forms.textField({
+            label: "Height"|t('book'),
+            id: 'height',
+            name: 'options[height]',
+            value: options.height,
+            type: 'number',
+            size: 8,
+            unit: 'px',
+        }) }}
+
+        {{ forms.textField({
+            label: "Aspect ratio"|t('book'),
+            instructions: "Beats the height when set. `8.5:11` for US Letter, `1:1.414` for A4."|t('book'),
+            id: 'ratio',
+            name: 'options[ratio]',
+            value: options.ratio,
+            size: 10,
+            placeholder: '8.5:11',
+        }) }}
+
+        {{ forms.selectField({
+            label: "Alignment"|t('book'),
+            id: 'align',
+            name: 'options[align]',
+            value: options.align,
+            options: [
+                { label: "Left"|t('book'), value: 'left' },
+                { label: "Centre"|t('book'), value: 'center' },
+                { label: "Right"|t('book'), value: 'right' },
+                { label: "Wide"|t('book'), value: 'wide' },
+                { label: "Full width"|t('book'), value: 'full' },
+            ],
+        }) }}
+
+        {{ forms.textField({
+            label: "Caption"|t('book'),
+            id: 'caption',
+            name: 'options[caption]',
+            value: options.caption,
+        }) }}
+
+        <hr>
+
+        <h2>{{ "Loading"|t('book') }}</h2>
+
+        {{ forms.selectField({
+            label: "When it loads"|t('book'),
+            instructions: "Ask first is the one that matters for the Google and Microsoft viewers: nothing at all is requested until the reader says so, so no IP address is shared without asking."|t('book'),
+            id: 'loading',
+            name: 'options[loading]',
+            value: options.loading,
+            options: [
+                { label: "Lazily, when it comes into view"|t('book'), value: 'lazy' },
+                { label: "Straight away"|t('book'), value: 'eager' },
+                { label: "Ask the reader first"|t('book'), value: 'click' },
+            ],
+            toggle: true,
+            targetPrefix: 'book-loading-',
+        }) }}
+
+        <div id="book-loading-click" class="{{ options.loading != 'click' ? 'hidden' }}">
+            {{ forms.textField({
+                label: "Consent title"|t('book'),
+                id: 'consentTitle',
+                name: 'options[consentTitle]',
+                value: options.consentTitle,
+                placeholder: "Show this document?"|t('book'),
+            }) }}
+
+            {{ forms.textareaField({
+                label: "Consent text"|t('book'),
+                id: 'consentText',
+                name: 'options[consentText]',
+                value: options.consentText,
+                rows: 2,
+            }) }}
+
+            {{ forms.textField({
+                label: "Button label"|t('book'),
+                id: 'consentButtonLabel',
+                name: 'options[consentButtonLabel]',
+                value: options.consentButtonLabel,
+                placeholder: "Show the document"|t('book'),
+            }) }}
+
+            {{ forms.lightswitchField({
+                label: "Remember the reader’s answer"|t('book'),
+                instructions: "Stores one flag per viewer host in the reader’s browser."|t('book'),
+                id: 'rememberConsent',
+                name: 'options[rememberConsent]',
+                on: options.rememberConsent,
+            }) }}
+        </div>
+
+        {{ forms.textField({
+            label: "Give up after"|t('book'),
+            instructions: "A viewer that cannot reach the file often answers with an apology page rather than an error. Past this, Book shows the file itself instead. 0 waits forever."|t('book'),
+            id: 'timeout',
+            name: 'options[timeout]',
+            value: options.timeout,
+            type: 'number',
+            size: 8,
+            unit: 'ms',
+        }) }}
+
+        <hr>
+
+        <h2>{{ "Toolbar"|t('book') }}</h2>
+
+        {{ forms.lightswitchField({
+            label: "Show a toolbar"|t('book'),
+            id: 'toolbar',
+            name: 'options[toolbar]',
+            on: options.toolbar,
+        }) }}
+
+        {{ forms.lightswitchField({ label: "Download button"|t('book'), id: 'download', name: 'options[download]', on: options.download }) }}
+        {{ forms.lightswitchField({ label: "Open in a new tab"|t('book'), id: 'open', name: 'options[open]', on: options.open }) }}
+        {{ forms.lightswitchField({ label: "Print button"|t('book'), id: 'print', name: 'options[print]', on: options.print }) }}
+        {{ forms.lightswitchField({ label: "Fullscreen button"|t('book'), id: 'fullscreen', name: 'options[fullscreen]', on: options.fullscreen }) }}
+        {{ forms.lightswitchField({ label: "Show the file’s type and size"|t('book'), id: 'showMeta', name: 'options[showMeta]', on: options.showMeta }) }}
+
+        <hr>
+
+        <h2>{{ "PDF"|t('book') }}</h2>
+        <p class="light">{{ "Honoured by the browser’s own PDF viewer, and ignored by everything else — which is the right way for a preference to fail."|t('book') }}</p>
+
+        {{ forms.lightswitchField({
+            label: "Show the browser’s PDF controls"|t('book'),
+            id: 'pdfToolbar',
+            name: 'options[pdfToolbar]',
+            on: options.pdfToolbar,
+        }) }}
+
+        {{ forms.textField({
+            label: "Open at page"|t('book'),
+            id: 'page',
+            name: 'options[page]',
+            value: options.page ?: '',
+            type: 'number',
+            size: 6,
+        }) }}
+
+        {{ forms.selectField({
+            label: "Zoom"|t('book'),
+            id: 'zoom',
+            name: 'options[zoom]',
+            value: options.zoom,
+            options: [
+                { label: "Leave it to the browser"|t('book'), value: '' },
+                { label: "Fit the width"|t('book'), value: 'page-width' },
+                { label: "Fit the page"|t('book'), value: 'page-fit' },
+                { label: "Fit the height"|t('book'), value: 'page-height' },
+            ],
+        }) }}
+
+        <hr>
+
+        <h2>{{ "Rendered by Book"|t('book') }}</h2>
+        <p class="light">{{ "For CSVs, Markdown, JSON, text and code — the formats Book reads and writes as HTML itself."|t('book') }}</p>
+
+        {{ forms.lightswitchField({
+            label: "Treat the first CSV row as headers"|t('book'),
+            id: 'csvHeader',
+            name: 'options[csvHeader]',
+            on: options.csvHeader,
+        }) }}
+
+        {{ forms.textField({
+            label: "Most rows to show"|t('book'),
+            id: 'maxRows',
+            name: 'options[maxRows]',
+            value: options.maxRows,
+            type: 'number',
+            size: 8,
+        }) }}
+
+        {{ forms.lightswitchField({
+            label: "Wrap long lines"|t('book'),
+            id: 'wrap',
+            name: 'options[wrap]',
+            on: options.wrap,
+        }) }}
+
+        <hr>
+
+        <h2>{{ "Access"|t('book') }}</h2>
+
+        {{ forms.selectField({
+            label: "Who can open the file"|t('book'),
+            instructions: "Only applies to files Book serves itself. A logged-in-only document cannot be shown by the Google or Microsoft viewers, because they fetch it as nobody."|t('book'),
+            id: 'access',
+            name: 'options[access]',
+            value: options.access,
+            options: [
+                { label: "Anyone with the link"|t('book'), value: 'public' },
+                { label: "Logged-in users"|t('book'), value: 'login' },
+            ],
+        }) }}
+
+        {{ forms.lightswitchField({
+            label: "Serve through Craft"|t('book'),
+            instructions: "Forces the file through Book’s own route even when its volume has public URLs. A volume with no public URLs always goes this way."|t('book'),
+            id: 'serveThroughCraft',
+            name: 'options[serveThroughCraft]',
+            on: options.serveThroughCraft,
+        }) }}
+    </div>
+{% endblock %}
+
+{% block details %}
+    <div id="settings" class="meta">
+        {{ forms.textField({
+            label: "Handle"|t('book'),
+            instructions: "What the reference tag uses."|t('book'),
+            id: 'handle',
+            name: 'handle',
+            value: document.handle,
+            class: 'code',
+            errors: document.getErrors('handle'),
+        }) }}
+
+        {{ forms.lightswitchField({
+            label: "Enabled"|t('app'),
+            instructions: "A disabled document renders nothing at all, everywhere it is referenced."|t('book'),
+            id: 'enabled',
+            name: 'enabled',
+            on: document.enabled,
+        }) }}
+    </div>
+
+    {% if document.id %}
+        {# No `{{ parent() }}` here: `_layouts/cp.twig` defines `details` but its own parent
+           does not, so calling it is a runtime error rather than a no-op. #}
+        <div class="meta read-only">
+            <div class="data">
+                <h5 class="heading">{{ "Reference tag"|t('book') }}</h5>
+                <div class="value">{{ include('_includes/forms/copytextbtn.twig', {
+                    class: ['code', 'small', 'light'],
+                    value: document.embedCode,
+                }) }}</div>
+            </div>
+            <div class="data">
+                <h5 class="heading">{{ "Format"|t('book') }}</h5>
+                <div class="value">{{ format.name }}</div>
+            </div>
+            {% if source.sizeLabel %}
+                <div class="data">
+                    <h5 class="heading">{{ "Size"|t('book') }}</h5>
+                    <div class="value">{{ source.sizeLabel }}</div>
+                </div>
+            {% endif %}
+            <div class="data">
+                <h5 class="heading">{{ "Created"|t('app') }}</h5>
+                <div class="value">{{ document.dateCreated|datetime('short') }}</div>
+            </div>
+            <div class="data">
+                <h5 class="heading">{{ "Updated"|t('app') }}</h5>
+                <div class="value">{{ document.dateUpdated|datetime('short') }}</div>
+            </div>
+        </div>
+    {% endif %}
+{% endblock %}

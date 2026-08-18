@@ -1,0 +1,101 @@
+/** Book — the document picker. */
+
+.book-picker-modal {
+    width: 34rem;
+    max-width: 90vw;
+}
+
+.book-picker__section + .book-picker__section {
+    margin-top: 1.25rem;
+    padding-top: 1.25rem;
+    border-top: 1px solid var(--hairline-color, #d5d8dc);
+}
+
+.book-picker__section h2 {
+    margin: 0 0 0.5rem;
+}
+
+.book-picker__add {
+    margin-bottom: 0.5rem;
+}
+
+.book-picker__url {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.book-picker__hint {
+    margin: 0.4rem 0 0;
+    color: var(--medium-text-color, #606d7b);
+    font-size: 0.8125rem;
+}
+
+.book-picker__results {
+    margin-top: 0.5rem;
+    max-height: 16rem;
+    overflow-y: auto;
+}
+
+.book-picker__row {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    width: 100%;
+    padding: 0.45rem 0.5rem;
+    border: 0;
+    border-radius: var(--small-border-radius, 4px);
+    background: transparent;
+    text-align: left;
+    cursor: pointer;
+}
+
+.book-picker__row:hover,
+.book-picker__row:focus-visible {
+    background: var(--gray-100, #eceef0);
+}
+
+.book-picker__row--disabled {
+    opacity: 0.6;
+}
+
+.book-picker__title {
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.book-picker__meta,
+.book-picker__handle {
+    flex: none;
+    color: var(--medium-text-color, #606d7b);
+    font-size: 0.8125rem;
+}
+
+.book-picker__badge {
+    flex: none;
+    padding: 0.05rem 0.4rem;
+    border-radius: 999px;
+    background: var(--gray-200, #dfe2e5);
+    font-size: 0.6875rem;
+}
+
+.book-picker__status {
+    margin: 0.75rem 0 0;
+    color: var(--medium-text-color, #606d7b);
+    font-size: 0.8125rem;
+}
+
+.book-picker__status--error {
+    color: var(--error-color, #cf1124);
+}
+
+/* The block both editors insert, as it looks while being edited. */
+.book-document {
+    padding: 0.5rem 0.75rem;
+    border: 1px dashed var(--hairline-color, #d5d8dc);
+    border-radius: var(--small-border-radius, 4px);
+    color: var(--medium-text-color, #606d7b);
+    font-size: 0.875rem;
+}

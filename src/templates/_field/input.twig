@@ -1,0 +1,125 @@
+{% import "_includes/forms.twig" as forms %}
+
+<div class="book-field" id="{{ id }}-book"
+     data-resolve-url="{{ actionUrl('book/documents/resolve') }}">
+
+    {{ forms.elementSelect({
+        id: id ~ '-asset',
+        name: name ~ '[assetId]',
+        elementType: 'craft\\elements\\Asset',
+        sources: elementSources,
+        selectionLabel: "Choose a file"|t('book'),
+        limit: 1,
+        elements: value.asset ? [value.asset] : [],
+    }) }}
+
+    {{ forms.text({
+        id: id ~ '-url',
+        name: name ~ '[url]',
+        value: value.url,
+        type: 'url',
+        placeholder: "…or paste a URL"|t('book'),
+        class: 'code',
+    }) }}
+
+    <div class="book-field__verdict {{ not resolution ? 'hidden' }}" data-book-verdict>
+        {% if resolution %}
+            <span class="book-field__format">{{ source.format.name }}</span>
+            <span class="book-field__viewer">{{ resolution.viewer }}</span>
+            {% for warning in resolution.warnings %}
+                <span class="book-field__warning">{{ warning }}</span>
+            {% endfor %}
+        {% endif %}
+    </div>
+
+    {% if enabledOptions %}
+        <div class="book-field__options">
+            {% if 'viewer' in enabledOptions %}
+                {{ forms.selectField({
+                    label: "Viewer"|t('book'),
+                    id: id ~ '-viewer',
+                    name: name ~ '[options][viewer]',
+                    value: options.viewer,
+                    options: viewerChoices,
+                }) }}
+            {% endif %}
+
+            {% if 'height' in enabledOptions %}
+                {{ forms.textField({
+                    label: "Height"|t('book'),
+                    id: id ~ '-height',
+                    name: name ~ '[options][height]',
+                    value: options.height,
+                    type: 'number',
+                    size: 8,
+                    unit: 'px',
+                }) }}
+            {% endif %}
+
+            {% if 'ratio' in enabledOptions %}
+                {{ forms.textField({
+                    label: "Aspect ratio"|t('book'),
+                    id: id ~ '-ratio',
+                    name: name ~ '[options][ratio]',
+                    value: options.ratio,
+                    size: 10,
+                    placeholder: '8.5:11',
+                }) }}
+            {% endif %}
+
+            {% if 'loading' in enabledOptions %}
+                {{ forms.selectField({
+                    label: "When it loads"|t('book'),
+                    id: id ~ '-loading',
+                    name: name ~ '[options][loading]',
+                    value: options.loading,
+                    options: [
+                        { label: "Lazily"|t('book'), value: 'lazy' },
+                        { label: "Straight away"|t('book'), value: 'eager' },
+                        { label: "Ask the reader first"|t('book'), value: 'click' },
+                    ],
+                }) }}
+            {% endif %}
+
+            {% if 'toolbar' in enabledOptions %}
+                {{ forms.lightswitchField({
+                    label: "Show a toolbar"|t('book'),
+                    id: id ~ '-toolbar',
+                    name: name ~ '[options][toolbar]',
+                    on: options.toolbar,
+                }) }}
+            {% endif %}
+
+            {% if 'title' in enabledOptions %}
+                {{ forms.textField({
+                    label: "Title"|t('book'),
+                    id: id ~ '-title',
+                    name: name ~ '[options][title]',
+                    value: options.title,
+                }) }}
+            {% endif %}
+
+            {% if 'caption' in enabledOptions %}
+                {{ forms.textField({
+                    label: "Caption"|t('book'),
+                    id: id ~ '-caption',
+                    name: name ~ '[options][caption]',
+                    value: options.caption,
+                }) }}
+            {% endif %}
+
+            {% if 'access' in enabledOptions %}
+                {{ forms.selectField({
+                    label: "Who can open the file"|t('book'),
+                    id: id ~ '-access',
+                    name: name ~ '[options][access]',
+                    value: options.access,
+                    options: [
+                        { label: "Anyone with the link"|t('book'), value: 'public' },
+                        { label: "Logged-in users"|t('book'), value: 'login' },
+                    ],
+                }) }}
+            {% endif %}
+        </div>
+    {% endif %}
+</div>

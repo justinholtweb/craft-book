@@ -1,0 +1,127 @@
+{# ---------------------------------------------------------------------------
+   Book — the document template.
+
+   Overridable: put your own at `_book/document.twig` in the site's templates and
+   it wins, with these same variables.
+
+   The shape is deliberate. A `<figure>` because a document with a caption is a
+   figure; a separate `.book-stage` because that is what carries the height and
+   what fullscreen expands; and, for click-to-load, the frame parked in a
+   `<template>` so that nothing at all is requested until the reader asks — a
+   `hidden` iframe still loads, which is the mistake most consent banners make.
+
+   Variables: id, label, source, format, options, viewer, resolution, classes,
+   stageStyle, frameAttributes, config, consent, card, inlineHtml, inlineError,
+   texts, devMode, document, handle, uid.
+--------------------------------------------------------------------------- #}
+
+{%- macro frame(src, attributes) -%}
+    <iframe src="{{ src }}" data-book-frame{{ attr(attributes) }}></iframe>
+{%- endmacro -%}
+
+{%- macro card(card, texts) -%}
+    <a class="book-card" href="{{ card.downloadUrl ?: card.url }}"{% if card.url %} download{% endif %}>
+        <span class="book-card__badge" aria-hidden="true">{{ card.extension }}</span>
+        <span class="book-card__text">
+            <span class="book-card__title">{{ card.title }}</span>
+            {% if card.showMeta %}
+                <span class="book-card__meta">{{ card.formatName }}{% if card.size %} · {{ card.size }}{% endif %}</span>
+            {% endif %}
+        </span>
+        <span class="book-card__action">{{ texts.download }}</span>
+    </a>
+{%- endmacro -%}
+
+{% import _self as book %}
+
+<figure id="{{ id }}" class="{{ classes|join(' ') }}" data-book="{{ config }}">
+
+    {%- if options.toolbar and options.hasToolbarButtons -%}
+        <div class="book-toolbar">
+            <span class="book-toolbar__title">
+                {{ label }}
+                {% if options.showMeta and card.size %}<span class="book-toolbar__meta">{{ card.extension }} · {{ card.size }}</span>{% endif %}
+            </span>
+            <span class="book-toolbar__actions">
+                {% if options.print and resolution.viewer in ['native', 'inline'] %}
+                    <button type="button" class="book-btn" data-book-print>{{ texts.print }}</button>
+                {% endif %}
+                {% if options.fullscreen and resolution.viewer != 'link' %}
+                    <button type="button" class="book-btn" data-book-fullscreen data-label-exit="{{ texts.exitFullscreen }}">{{ texts.fullscreen }}</button>
+                {% endif %}
+                {% if options.open and card.url %}
+                    <a class="book-btn" href="{{ card.url }}" target="_blank" rel="noopener noreferrer">{{ texts.open }}</a>
+                {% endif %}
+                {% if options.download and card.downloadUrl %}
+                    <a class="book-btn book-btn--primary" href="{{ card.downloadUrl }}" download>{{ texts.download }}</a>
+                {% endif %}
+            </span>
+        </div>
+    {%- endif -%}
+
+    <div class="book-stage"{% if stageStyle %} style="{{ stageStyle }}"{% endif %}>
+
+        {%- if resolution.viewer == 'link' -%}
+            {{ book.card(card, texts) }}
+
+        {%- elseif resolution.viewer == 'inline' -%}
+            {%- if inlineHtml is not null -%}
+                <div class="book-inline">{{ inlineHtml|raw }}</div>
+            {%- else -%}
+                {{ book.card(card, texts) }}
+                {% if devMode and inlineError %}<p class="book-error">{{ inlineError }}</p>{% endif %}
+            {%- endif -%}
+
+        {%- elseif resolution.viewer == 'native' and format.nativeImage -%}
+            <img class="book-image" src="{{ card.url }}" alt="{{ label }}"
+                 loading="{{ options.loading == 'eager' ? 'eager' : 'lazy' }}">
+
+        {%- elseif resolution.viewer == 'native' and format.mediaTag -%}
+            <{{ format.mediaTag }} class="book-media" src="{{ card.url }}" controls preload="metadata">
+                {{ texts.failed }}
+            </{{ format.mediaTag }}>
+
+        {%- elseif options.loading == 'click' -%}
+            <button type="button" class="book-consent" data-book-consent
+                {%- if consent.poster %} style="background-image:url({{ consent.poster }})"{% endif %}>
+                <span class="book-consent__inner">
+                    <span class="book-consent__title">{{ consent.title }}</span>
+                    {% if consent.text %}<span class="book-consent__text">{{ consent.text }}</span>{% endif %}
+                    <span class="book-consent__button">{{ consent.button }}</span>
+                </span>
+            </button>
+
+            {# Inert until cloned. A `hidden` iframe would already have made the request. #}
+            <template data-book-template>{{ book.frame(resolution.frameUrl, frameAttributes) }}</template>
+
+            <noscript>{{ book.card(card, texts) }}</noscript>
+
+        {%- else -%}
+            {{ book.frame(resolution.frameUrl, frameAttributes) }}
+        {%- endif -%}
+
+        {%- if resolution.frameUrl -%}
+            {% if options.showLoader and options.loading != 'click' %}
+                <div class="book-loader" data-book-loader aria-hidden="true"><span></span></div>
+            {% endif %}
+
+            {# What the reader gets when the frame never loads — a third-party viewer that
+               cannot reach the file answers 200 with an apology, and a blocked one says
+               nothing at all. Either way, the file itself is still right here. #}
+            <div class="book-fallback" data-book-fallback hidden>
+                <p class="book-fallback__title">{{ texts.failed }}</p>
+                {{ book.card(card, texts) }}
+            </div>
+        {%- endif -%}
+    </div>
+
+    {%- if devMode and resolution.warnings -%}
+        <div class="book-warnings">
+            {% for warning in resolution.warnings %}<p>{{ warning }}</p>{% endfor %}
+        </div>
+    {%- endif -%}
+
+    {%- if options.caption -%}
+        <figcaption class="book-caption">{{ options.caption }}</figcaption>
+    {%- endif -%}
+</figure>
