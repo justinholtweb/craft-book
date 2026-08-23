@@ -1,3 +1,7 @@
+{# Field names carry no `settings[…]` prefix: `craft\base\Plugin::settingsResponse()` runs this
+   template's output through `View::namespaceInputs(…, 'settings')`, so a name written as
+   `settings[foo]` here posts as `settings[settings][foo]` and saves nothing at all — the screen
+   looks perfect, Craft reports "Plugin settings saved", and every edit is silently discarded. #}
 {% import "_includes/forms.twig" as forms %}
 
 <div class="readable">
@@ -12,7 +16,7 @@
     label: "Allow the Google viewer"|t('book'),
     instructions: "docs.google.com renders almost any format. Turning this off means Google never receives a document URL from this site — and that Book will not offer it, automatically or otherwise."|t('book'),
     id: 'allowGoogleViewer',
-    name: 'settings[allowGoogleViewer]',
+    name: 'allowGoogleViewer',
     on: settings.allowGoogleViewer,
 }) }}
 
@@ -20,7 +24,7 @@
     label: "Allow the Microsoft Office viewer"|t('book'),
     instructions: "view.officeapps.live.com renders Word, Excel and PowerPoint files better than anything else does. Same trade: Microsoft’s servers download the file."|t('book'),
     id: 'allowOfficeViewer',
-    name: 'settings[allowOfficeViewer]',
+    name: 'allowOfficeViewer',
     on: settings.allowOfficeViewer,
 }) }}
 
@@ -28,7 +32,7 @@
     label: "Check that URLs are publicly reachable"|t('book'),
     instructions: "Stops Book handing a `.ddev.site`, `.test` or private-network URL to a viewer that fetches it from its own servers — the usual cause of a blank viewer on a staging site."|t('book'),
     id: 'checkPublicUrl',
-    name: 'settings[checkPublicUrl]',
+    name: 'checkPublicUrl',
     on: settings.checkPublicUrl,
 }) }}
 
@@ -40,7 +44,7 @@
     label: "Serve assets through Craft"|t('book'),
     instructions: "Off, a public asset is embedded at its own volume URL. On, every file goes through Book’s route instead — slower, and worth it when the volume path is something you would rather not publish. A volume with no public URLs always goes through Craft regardless."|t('book'),
     id: 'serveAssetsThroughCraft',
-    name: 'settings[serveAssetsThroughCraft]',
+    name: 'serveAssetsThroughCraft',
     on: settings.serveAssetsThroughCraft,
 }) }}
 
@@ -48,7 +52,7 @@
     label: "Sign file URLs"|t('book'),
     instructions: "Adds an expiring signature to the URLs Book serves. Note the consequence: the Google and Microsoft viewers fetch the file from their own servers, so a signature that expires takes those embeds with it."|t('book'),
     id: 'signedUrls',
-    name: 'settings[signedUrls]',
+    name: 'signedUrls',
     on: settings.signedUrls,
     toggle: 'book-signed',
 }) }}
@@ -58,7 +62,7 @@
         label: "Signature lifetime"|t('book'),
         instructions: "In seconds. 0 signs the URL without an expiry."|t('book'),
         id: 'signedUrlDuration',
-        name: 'settings[signedUrlDuration]',
+        name: 'signedUrlDuration',
         value: settings.signedUrlDuration,
         type: 'number',
         size: 10,
@@ -75,7 +79,7 @@
     label: "Inline size limit"|t('book'),
     instructions: "The most Book will read into memory to render a CSV, Markdown, JSON or text file itself. Anything larger becomes a download card."|t('book'),
     id: 'inlineMaxBytes',
-    name: 'settings[inlineMaxBytes]',
+    name: 'inlineMaxBytes',
     value: settings.inlineMaxBytes,
     type: 'number',
     size: 12,
@@ -87,7 +91,7 @@
     label: "HTML Purifier config"|t('book'),
     instructions: "Used when Book renders a Markdown file, which may contain raw HTML. Files in `config/htmlpurifier/`."|t('book'),
     id: 'purifierConfig',
-    name: 'settings[purifierConfig]',
+    name: 'purifierConfig',
     value: settings.purifierConfig,
     options: purifierConfigs,
 }) }}
@@ -100,7 +104,7 @@
     label: "Register stylesheet"|t('book'),
     instructions: "Book’s own CSS, added only to pages that have a document on them."|t('book'),
     id: 'registerCss',
-    name: 'settings[registerCss]',
+    name: 'registerCss',
     on: settings.registerCss,
 }) }}
 
@@ -108,7 +112,7 @@
     label: "Register runtime"|t('book'),
     instructions: "The script behind click-to-load, the load timeout, fullscreen and print. Turning it off leaves plain frames that still work."|t('book'),
     id: 'registerJs',
-    name: 'settings[registerJs]',
+    name: 'registerJs',
     on: settings.registerJs,
 }) }}
 
@@ -116,7 +120,7 @@
     label: "Rich-text editor button"|t('book'),
     instructions: "Adds Book’s button to CKEditor and Redactor. Documents already in content keep rendering either way — that is Craft’s reference-tag parsing, not the editor."|t('book'),
     id: 'richTextIntegration',
-    name: 'settings[richTextIntegration]',
+    name: 'richTextIntegration',
     on: settings.richTextIntegration,
 }) }}
 

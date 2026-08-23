@@ -11,6 +11,11 @@ element with a reference tag rather than a shortcode.
 
 Plan in `docs/plan.md`. Family conventions and traps in the shared memory.
 
+`docs/*.md` — everything except `plan.md` — is the source of truth for the marketing site at
+`justinholt.com/plugins/craft-book`, pulled by `pluginsite/docs/sync`. Every published page needs
+YAML front matter with at least a `title`; `plan.md` has none, which is how it stays off the site.
+Plugin Store promo images live in `promos/` (`./build.sh`), not in the website repo.
+
 ## Tech Stack
 
 - **PHP 8.2+**, **Craft CMS 5.3+**, Yii2, Twig
@@ -85,6 +90,11 @@ stops Book turning an unguessable UID into a way around volume permissions.
 
 ## Traps found while building this
 
+- **A plugin settings template is already namespaced.** `craft\base\Plugin::settingsResponse()`
+  runs the template's output through `View::namespaceInputs(…, 'settings')`, so a field written as
+  `name="settings[foo]"` posts as `settings[settings][foo]` and saves nothing at all. The screen
+  looks perfect, Craft reports "Plugin settings saved", and every edit is silently discarded.
+  Field names in `src/templates/settings.twig` carry **no prefix**, and the file says so at the top.
 - **`p` is Craft's `pathParam`** and `token` is its preview token, so a signature sent as either
   is read as something else and the route 404s before any controller runs. Book uses `bookref`
   (`Delivery::PARAM`), and a check asserts it is neither.

@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" fill="none" stroke="#ffffff" stroke-width="2.4" stroke-linejoin="round">
+  <!--
+    Watermark: the open book drawn as an outline, and with the icon's rounded tile stripped.
+
+    Same two corrections every deck in this family needs. The tile goes because at slide scale its
+    edge is a hard rectangle laid over the artwork. The fill goes because the mark is two large
+    solid slabs — at 5 per cent opacity they read as two grey rectangles and the fold between them,
+    which is the only thing saying "book", disappears entirely. Stroked, both pages and the fold
+    survive.
+
+    The geometry is src/icon.svg's, transform included, so the three files cannot drift.
+  -->
+  <rect x="13" y="37.34" width="34" height="41" rx="5" transform="skewY(-14.42)"/>
+  <rect x="53" y="11.63" width="34" height="41" rx="5" transform="skewY(14.42)"/>
+</svg>

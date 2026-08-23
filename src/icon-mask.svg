@@ -1,6 +1,5 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
-    <path d="M4 4.2A1.7 1.7 0 0 1 5.7 2.5H12v19H5.7A1.7 1.7 0 0 1 4 19.8V4.2Z"/>
-    <path d="M20 4.2a1.7 1.7 0 0 0-1.7-1.7H12v19h6.3a1.7 1.7 0 0 0 1.7-1.7V4.2Z"/>
-    <path d="M12 2.5v19"/>
-    <path d="M7 7h2.5M7 10.5h2.5M14.5 7H17M14.5 10.5H17"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <!-- Control panel nav icon: the mark alone, no tile, inheriting Craft's own colour. -->
+  <rect x="13" y="37.34" width="34" height="41" rx="5" transform="skewY(-14.42)"/>
+  <rect x="53" y="11.63" width="34" height="41" rx="5" transform="skewY(14.42)"/>
 </svg>

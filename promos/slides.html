@@ -1,0 +1,645 @@
+<!DOCTYPE html>
+<!-- handmade: hand-tuned deck -->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Book — Plugin Store promos</title>
+<link rel="stylesheet" href="fonts.css">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  :root {
+    --ink: #0c1310;
+    --ink-light: #121c18;
+    --ink-lighter: #1c2a24;
+    --accent: #3E5C50;
+    --accent-light: #7FA890;
+    --paper: #D9C89C;
+    --green: #4ade80;
+    --off-white: #f2f4f1;
+  }
+
+  html { background: #000; }
+
+  body {
+    font-family: 'Inter', -apple-system, sans-serif;
+    color: var(--off-white);
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* ---- slide shell ---------------------------------------------------- */
+  .slide {
+    position: relative;
+    width: 1920px;
+    height: 1080px;
+    overflow: hidden;
+    background:
+      radial-gradient(ellipse at 85% 15%, rgba(62, 92, 80, 0.38) 0%, transparent 40%),
+      radial-gradient(ellipse at 65% 5%,  rgba(127, 168, 144, 0.13) 0%, transparent 35%),
+      radial-gradient(ellipse at 15% 85%, rgba(217, 200, 156, 0.06) 0%, transparent 40%),
+      radial-gradient(ellipse at 35% 95%, rgba(62, 92, 80, 0.10) 0%, transparent 35%),
+      linear-gradient(135deg, #0c1310 0%, #121e19 30%, #16241e 60%, #0c1310 100%);
+  }
+
+  /* Oversized watermark, echoing the app icon. The mark is wide and short, so it wants a
+     shallower crop than a tall icon would. At left -6% the first render sliced the left page
+     off at x=0, leaving the fold floating; -1% puts both pages and the fold on the slide. */
+  .slide::after {
+    content: '';
+    position: absolute;
+    top: 5%;
+    left: -1%;
+    width: 1150px;
+    height: 1150px;
+    background: url('assets/watermark.svg') no-repeat center / contain;
+    opacity: 0.05;
+    pointer-events: none;
+  }
+
+  /* Hairline along the top edge */
+  .slide::before {
+    content: '';
+    position: absolute;
+    inset: 0 0 auto 0;
+    height: 6px;
+    background: linear-gradient(90deg, var(--accent), var(--accent-light), var(--paper), var(--accent));
+    z-index: 5;
+  }
+
+  .inner {
+    position: relative;
+    z-index: 2;
+    height: 100%;
+    padding: 118px 130px;
+    display: flex;
+    align-items: center;
+  }
+
+  /* ---- type ------------------------------------------------------------ */
+  .eyebrow {
+    display: flex;
+    align-items: center;
+    gap: 18px;
+    font-size: 20px;
+    font-weight: 500;
+    letter-spacing: 0.32em;
+    text-transform: uppercase;
+    color: rgba(242, 244, 241, 0.62);
+    margin-bottom: 34px;
+  }
+  .eyebrow .rule {
+    width: 58px;
+    height: 3px;
+    border-radius: 2px;
+    background: var(--accent-light);
+  }
+
+  h1, h2 {
+    font-family: 'Jersey 20', sans-serif;
+    font-weight: 400;
+    line-height: 0.9;
+    letter-spacing: 0.005em;
+  }
+
+  .gradient-text {
+    background: linear-gradient(100deg, #5E8874 0%, #7FA890 34%, #D9C89C 66%, #5E8874 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+
+  .lede {
+    font-size: 34px;
+    line-height: 1.5;
+    color: rgba(242, 244, 241, 0.72);
+  }
+
+  .mono {
+    font-family: 'JetBrains Mono', ui-monospace, 'SF Mono', Menlo, monospace;
+  }
+
+  /* ---- cover slide ----------------------------------------------------- */
+  .cover .inner { gap: 90px; }
+  .cover .copy { flex: 1 1 auto; }
+  .cover h1 { font-size: 320px; margin-bottom: 18px; }
+  .cover .tagline {
+    font-family: 'Jersey 20', sans-serif;
+    font-size: 60px;
+    line-height: 1.02;
+    color: var(--off-white);
+    margin-bottom: 40px;
+    max-width: 15ch;
+  }
+  .cover .lede { max-width: 34ch; font-size: 30px; }
+
+  .cover .mark {
+    flex: 0 0 auto;
+    width: 460px;
+    height: 460px;
+    filter: drop-shadow(14px 14px 0 rgba(0, 0, 0, 0.35));
+  }
+  .cover .mark img { width: 100%; height: 100%; display: block; }
+
+  .badges { display: flex; gap: 16px; margin-top: 52px; }
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 12px;
+    padding: 14px 26px;
+    font-size: 22px;
+    font-weight: 500;
+    color: rgba(242, 244, 241, 0.85);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 999px;
+  }
+  .badge .dot {
+    width: 10px; height: 10px; border-radius: 50%;
+    background: var(--accent-light);
+  }
+  .badge.price .dot { background: var(--paper); }
+
+  /* ---- the link/tag statement ------------------------------------------ */
+  .statement .inner { flex-direction: column; justify-content: center; align-items: center; text-align: center; }
+  .statement .eyebrow { justify-content: center; }
+  .swap { display: flex; flex-direction: column; align-items: center; gap: 22px; margin-top: 8px; }
+  .swap .caption {
+    font-size: 26px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: rgba(242, 244, 241, 0.42);
+  }
+  .swap .before {
+    font-size: 42px;
+    white-space: nowrap;
+    color: rgba(242, 244, 241, 0.34);
+    letter-spacing: 0.01em;
+  }
+  .swap .arrow {
+    width: 4px;
+    height: 62px;
+    border-radius: 2px;
+    background: linear-gradient(180deg, rgba(127, 168, 144, 0.15), var(--accent-light));
+    position: relative;
+  }
+  .swap .arrow::after {
+    content: '';
+    position: absolute;
+    left: 50%; bottom: -4px;
+    width: 18px; height: 18px;
+    transform: translateX(-50%) rotate(45deg);
+    border-right: 4px solid var(--accent-light);
+    border-bottom: 4px solid var(--accent-light);
+    border-radius: 2px;
+  }
+  .swap .after {
+    font-size: 74px;
+    line-height: 1;
+    letter-spacing: 0.01em;
+    white-space: nowrap;
+  }
+  .statement .lede { margin-top: 40px; max-width: 42ch; font-size: 32px; }
+
+  /* ---- feature slides -------------------------------------------------- */
+  .feature .inner { align-items: center; }
+  .feature .copy { width: 780px; flex: 0 0 780px; }
+  .feature h2 { font-size: 108px; margin-bottom: 30px; }
+  .feature .lede { max-width: 21ch; }
+
+  .points {
+    list-style: none;
+    margin-top: 44px;
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+  }
+  .points li {
+    display: flex;
+    align-items: flex-start;
+    gap: 16px;
+    font-size: 25px;
+    line-height: 1.4;
+    color: rgba(242, 244, 241, 0.6);
+  }
+  .points li .tick {
+    flex: 0 0 auto;
+    margin-top: 9px;
+    width: 10px; height: 10px;
+    border-radius: 50%;
+    background: var(--accent-light);
+  }
+  /* The li is a flex container, so an inline <span class="mono"> or <em> left loose in the
+     text becomes a sibling flex item and picks up the 16px gap on both sides. Every point
+     keeps its text in one .t. */
+  .points li .t { flex: 1 1 auto; }
+
+  /* Right-hand panel shared by the viewer table, the verdict and the comparison */
+  .panel {
+    position: absolute;
+    top: 50%;
+    left: 900px;
+    right: 130px;
+    transform: translateY(-50%);
+    display: flex;
+    flex-direction: column;
+    gap: 22px;
+  }
+
+  /* ---- the viewer table ------------------------------------------------- */
+  .rows { display: flex; flex-direction: column; gap: 16px; }
+  .row {
+    display: flex;
+    align-items: center;
+    gap: 26px;
+    padding: 26px 34px;
+    border-radius: 16px;
+    background: rgba(28, 42, 36, 0.62);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+  }
+  .row .name { flex: 0 0 152px; font-size: 28px; color: var(--off-white); }
+  .row .what { flex: 1 1 auto; font-size: 23px; color: rgba(242, 244, 241, 0.5); white-space: nowrap; }
+  .row .state {
+    flex: 0 0 auto;
+    font-size: 19px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: rgba(242, 244, 241, 0.4);
+  }
+  /* A dashed 1px border does not read at 1920, so who-renders-it is carried by colour on the
+     state label — the one distinction on this slide that has to survive downsampling. */
+  .row.third .state { color: var(--paper); }
+  .row.own { border-color: rgba(127, 168, 144, 0.5); background: rgba(62, 92, 80, 0.22); }
+  .row.own .state { color: var(--accent-light); }
+
+  /* ---- the verdict ------------------------------------------------------ */
+  .verdict {
+    border-radius: 18px;
+    overflow: hidden;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    background: rgba(28, 42, 36, 0.62);
+  }
+  .verdict .chosen {
+    display: flex;
+    align-items: baseline;
+    gap: 22px;
+    padding: 36px 40px;
+    background: rgba(62, 92, 80, 0.34);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  }
+  .verdict .chosen .k {
+    font-size: 19px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--accent-light);
+  }
+  .verdict .chosen .v { font-size: 44px; color: var(--off-white); }
+  .verdict .chosen .why { font-size: 22px; color: rgba(242, 244, 241, 0.5); margin-left: auto; }
+
+  .verdict .out { padding: 30px 40px 36px; }
+  .verdict .out .k {
+    font-size: 19px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: rgba(242, 244, 241, 0.34);
+    margin-bottom: 22px;
+  }
+  .verdict .ruled { display: flex; align-items: baseline; gap: 20px; padding: 15px 0; }
+  .verdict .ruled + .ruled { border-top: 1px solid rgba(255, 255, 255, 0.06); }
+  .verdict .ruled .n { flex: 0 0 132px; font-size: 27px; color: rgba(242, 244, 241, 0.44); }
+  .verdict .ruled .r { flex: 1 1 auto; font-size: 23px; line-height: 1.35; color: rgba(242, 244, 241, 0.6); }
+  .verdict .ruled .r em { font-style: normal; color: var(--paper); }
+
+  /* ---- the two-sided comparison ----------------------------------------- */
+  .weigh { display: flex; flex-direction: column; gap: 24px; }
+  .side {
+    padding: 40px;
+    border-radius: 18px;
+    background: rgba(28, 42, 36, 0.62);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+  }
+  .side .chip {
+    display: inline-block;
+    margin-bottom: 20px;
+    padding: 7px 16px;
+    border-radius: 999px;
+    font-size: 18px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: rgba(242, 244, 241, 0.4);
+    background: rgba(255, 255, 255, 0.06);
+  }
+  .side .where { font-size: 32px; font-weight: 600; color: var(--off-white); margin-bottom: 16px; }
+  .side .what { font-size: 23px; line-height: 1.5; color: rgba(242, 244, 241, 0.5); }
+  .side.after { border-color: rgba(127, 168, 144, 0.5); background: rgba(62, 92, 80, 0.2); }
+  .side.after .chip { color: var(--accent-light); background: rgba(62, 92, 80, 0.34); }
+  .side.after .what { color: rgba(242, 244, 241, 0.66); }
+
+  /* ---- the rendered spreadsheet ------------------------------------------ */
+  .sheet {
+    border-radius: 16px;
+    overflow: hidden;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    background: rgba(28, 42, 36, 0.62);
+  }
+  .sheet .head {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 24px 34px;
+    background: rgba(62, 92, 80, 0.34);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    font-size: 23px;
+    color: rgba(242, 244, 241, 0.72);
+  }
+  .sheet .head .badge-inline {
+    margin-left: auto;
+    font-size: 18px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--accent-light);
+  }
+  .sheet table { width: 100%; border-collapse: collapse; }
+  .sheet th, .sheet td {
+    padding: 19px 34px;
+    text-align: left;
+    font-size: 24px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  }
+  .sheet th {
+    font-size: 19px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    font-weight: 600;
+    color: rgba(242, 244, 241, 0.42);
+  }
+  .sheet td { color: rgba(242, 244, 241, 0.74); }
+  .sheet td.num { text-align: right; font-family: 'JetBrains Mono', ui-monospace, 'SF Mono', Menlo, monospace; color: var(--paper); }
+  .sheet tr:last-child td { border-bottom: none; }
+  .sheet .foot {
+    padding: 20px 34px;
+    font-size: 20px;
+    color: rgba(242, 244, 241, 0.34);
+    border-top: 1px solid rgba(255, 255, 255, 0.06);
+  }
+
+  /* ---- code card --------------------------------------------------------- */
+  .code {
+    position: absolute;
+    top: 50%;
+    left: 900px;
+    right: -110px;
+    transform: translateY(-50%);
+    border-radius: 14px;
+    overflow: hidden;
+    box-shadow: 0 30px 90px rgba(0, 0, 0, 0.55);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+  }
+  .code .chrome {
+    height: 56px;
+    display: flex;
+    align-items: center;
+    padding: 0 30px;
+    font-size: 20px;
+    color: rgba(242, 244, 241, 0.4);
+    background: #1c2a24;
+    font-family: 'JetBrains Mono', ui-monospace, 'SF Mono', Menlo, monospace;
+  }
+  .code .body {
+    background: #080d0b;
+    padding: 40px 44px;
+    font-family: 'JetBrains Mono', ui-monospace, 'SF Mono', Menlo, monospace;
+    font-size: 24px;
+    line-height: 1.85;
+    color: rgba(242, 244, 241, 0.82);
+    white-space: nowrap;
+  }
+  .code .tag { color: var(--accent-light); }
+  .code .fn { color: var(--paper); }
+  .code .str { color: var(--green); }
+  .code .cm { color: rgba(242, 244, 241, 0.3); }
+  .code .blank { display: block; height: 20px; }
+
+  /* ---- footer lockup --------------------------------------------------- */
+  .footer {
+    position: absolute;
+    left: 130px;
+    bottom: 62px;
+    z-index: 3;
+    display: flex;
+    align-items: center;
+    gap: 18px;
+    font-size: 22px;
+    letter-spacing: 0.06em;
+    color: rgba(242, 244, 241, 0.4);
+  }
+  .footer img { width: 40px; height: 40px; border-radius: 9px; }
+  .footer b { color: rgba(242, 244, 241, 0.72); font-weight: 600; }
+
+  /* Only render the requested slide when screenshotting */
+  body.single .slide { display: none; }
+  body.single .slide.active { display: block; }
+</style>
+</head>
+<body>
+
+<!-- 1 · Cover ============================================================ -->
+<section class="slide cover" data-n="1">
+  <div class="inner">
+    <div class="copy">
+      <div class="eyebrow"><span class="rule"></span> Craft CMS 5</div>
+      <h1 class="gradient-text">Book</h1>
+      <p class="tagline">Any document, on&nbsp;the&nbsp;page.</p>
+      <p class="lede">PDF, Word, Excel, PowerPoint, OpenDocument, CSV, Markdown, images and media —
+        from a Craft asset or a URL, in Twig or in rich text.</p>
+      <div class="badges">
+        <span class="badge price"><span class="dot"></span> Free &nbsp;·&nbsp; no editions</span>
+        <span class="badge">Craft 5.3+ · PHP 8.2+ · no outbound requests</span>
+      </div>
+    </div>
+    <div class="mark"><img src="assets/icon.svg" alt=""></div>
+  </div>
+</section>
+
+<!-- 2 · A link, or the document ========================================== -->
+<section class="slide statement" data-n="2">
+  <div class="inner">
+    <div class="eyebrow"><span class="rule"></span> The whole idea</div>
+    <div class="swap">
+      <span class="caption">What a document usually becomes</span>
+      <span class="before mono">Download our brochure (PDF, 4.2&nbsp;MB)</span>
+      <span class="arrow"></span>
+      <span class="caption">Book makes it the page</span>
+      <span class="after mono gradient-text">{book:brochure:render}</span>
+    </div>
+    <p class="lede">A reference tag, not a shortcode. Craft parses it in every rich-text value on
+      the way out, so it renders in CKEditor, in Redactor and in any HTML field — and no template
+      has to know.</p>
+  </div>
+  <div class="footer"><img src="assets/icon.svg" alt=""> <b>Book</b> &nbsp;·&nbsp; justinholt.com/plugins/craft-book</div>
+</section>
+
+<!-- 3 · The five viewers ================================================= -->
+<section class="slide feature" data-n="3">
+  <div class="inner">
+    <div class="copy">
+      <div class="eyebrow"><span class="rule"></span> The five viewers</div>
+      <h2>Auto is not<br>a viewer</h2>
+      <p class="lede">It is the answer to “what will actually work here”.</p>
+      <ul class="points">
+        <li><span class="tick"></span><span class="t">A PDF tries the browser first, a .docx tries Microsoft</span></li>
+        <li><span class="tick"></span><span class="t">Format, settings and environment can each rule one out</span></li>
+        <li><span class="tick"></span><span class="t">The download card is always possible, and always last</span></li>
+      </ul>
+    </div>
+  </div>
+  <div class="panel">
+    <div class="rows">
+      <div class="row own"><span class="name mono">native</span><span class="what">PDF, images, audio, video</span><span class="state">The browser</span></div>
+      <div class="row third"><span class="name mono">office</span><span class="what">Word, Excel, PowerPoint</span><span class="state">Microsoft</span></div>
+      <div class="row third"><span class="name mono">google</span><span class="what">Nearly everything</span><span class="state">Google</span></div>
+      <div class="row own"><span class="name mono">inline</span><span class="what">CSV, Markdown, JSON, text, code</span><span class="state">Book renders it</span></div>
+      <div class="row own"><span class="name mono">link</span><span class="what">Anything at all</span><span class="state">Download card</span></div>
+    </div>
+  </div>
+  <div class="footer"><img src="assets/icon.svg" alt=""> <b>Book</b> &nbsp;·&nbsp; justinholt.com/plugins/craft-book</div>
+</section>
+
+<!-- 4 · The verdict ====================================================== -->
+<section class="slide feature" data-n="4">
+  <div class="inner">
+    <div class="copy">
+      <div class="eyebrow"><span class="rule"></span> The verdict</div>
+      <h2>It says what<br>it ruled out</h2>
+      <p class="lede">The usual failure is a blank viewer on staging with nothing explaining it.</p>
+      <ul class="points">
+        <li><span class="tick"></span><span class="t">On the edit screen, before anything is published</span></li>
+        <li><span class="tick"></span><span class="t">In <span class="mono">craft.book.resolve()</span>, and on the page under devMode</span></li>
+        <li><span class="tick"></span><span class="t">Or set <span class="mono">fallback: false</span> and get a card, not a substitute</span></li>
+      </ul>
+    </div>
+  </div>
+  <div class="panel">
+    <div class="verdict">
+      <div class="chosen">
+        <span class="k">Chosen</span>
+        <span class="v mono">inline</span>
+        <span class="why">prices.csv &nbsp;·&nbsp; rendered by Craft</span>
+      </div>
+      <div class="out">
+        <div class="k">Ruled out</div>
+        <div class="ruled"><span class="n mono">google</span><span class="r">the URL is not publicly reachable — <em>book.ddev.site</em> is nothing Google can fetch</span></div>
+        <div class="ruled"><span class="n mono">office</span><span class="r">turned off in this site’s settings, so no URL is ever handed over</span></div>
+        <div class="ruled"><span class="n mono">native</span><span class="r">no browser renders a <em>.csv</em> in a frame</span></div>
+      </div>
+    </div>
+  </div>
+  <div class="footer"><img src="assets/icon.svg" alt=""> <b>Book</b> &nbsp;·&nbsp; justinholt.com/plugins/craft-book</div>
+</section>
+
+<!-- 5 · Private documents ================================================ -->
+<section class="slide feature" data-n="5">
+  <div class="inner">
+    <div class="copy">
+      <div class="eyebrow"><span class="rule"></span> Private documents</div>
+      <h2>No public<br>volume needed</h2>
+      <p class="lede">The usual answer is “make the volume public”. That is the wrong answer.</p>
+      <ul class="points">
+        <li><span class="tick"></span><span class="t">The token carries the access rule, HMAC-signed</span></li>
+        <li><span class="tick"></span><span class="t">An unsigned request only reaches an already-published file</span></li>
+        <li><span class="tick"></span><span class="t">Set <span class="mono">access: login</span> and a guest gets the login screen</span></li>
+      </ul>
+    </div>
+  </div>
+  <div class="panel">
+    <div class="weigh">
+      <div class="side">
+        <span class="chip">The usual answer</span>
+        <div class="where">Publish the whole volume</div>
+        <div class="what">Every file in it becomes public, because one brochure needed a viewer. The
+          permission you wanted was per document; the one you had was per volume.</div>
+      </div>
+      <div class="side after">
+        <span class="chip">What Book does</span>
+        <div class="where">A signed route, per document</div>
+        <div class="what"><span class="mono">expires.access.disposition.hmac</span> — and the rule is
+          read out of the token, never out of a query parameter. The volume stays private, the PDF
+          still opens in the browser’s own viewer, and a CSV still renders as a table.</div>
+      </div>
+    </div>
+  </div>
+  <div class="footer"><img src="assets/icon.svg" alt=""> <b>Book</b> &nbsp;·&nbsp; justinholt.com/plugins/craft-book</div>
+</section>
+
+<!-- 6 · Inline rendering ================================================= -->
+<section class="slide feature" data-n="6">
+  <div class="inner">
+    <div class="copy">
+      <div class="eyebrow"><span class="rule"></span> Inline rendering</div>
+      <h2>Some files<br>need no viewer</h2>
+      <p class="lede">A CSV needs a server willing to read it, not a document viewer.</p>
+      <ul class="points">
+        <li><span class="tick"></span><span class="t">Delimiter sniffed, quoted commas kept, BOM stripped</span></li>
+        <li><span class="tick"></span><span class="t">Markdown purified — these files come off an upload volume</span></li>
+        <li><span class="tick"></span><span class="t">Works on a private asset, and involves nobody at all</span></li>
+      </ul>
+    </div>
+  </div>
+  <div class="panel">
+    <div class="sheet">
+      <div class="head"><span class="mono">price-list-2026.csv</span> <span class="badge-inline">Rendered by Craft</span></div>
+      <table>
+        <tr><th>Item</th><th>Region</th><th style="text-align:right">Unit</th><th style="text-align:right">Qty</th></tr>
+        <tr><td>Cast bronze fitting</td><td>North</td><td class="num">£148.00</td><td class="num">120</td></tr>
+        <tr><td>Stainless bracket, 40mm</td><td>North</td><td class="num">£22.50</td><td class="num">1,480</td></tr>
+        <tr><td>Gasket set “A, B, C”</td><td>South</td><td class="num">£9.95</td><td class="num">640</td></tr>
+        <tr><td>Mounting plate</td><td>South</td><td class="num">£61.20</td><td class="num">305</td></tr>
+      </table>
+      <div class="foot">Showing the first 500 rows of 3,914.</div>
+    </div>
+  </div>
+  <div class="footer"><img src="assets/icon.svg" alt=""> <b>Book</b> &nbsp;·&nbsp; justinholt.com/plugins/craft-book</div>
+</section>
+
+<!-- 7 · Twig ============================================================= -->
+<section class="slide feature" data-n="7">
+  <div class="inner">
+    <div class="copy">
+      <div class="eyebrow"><span class="rule"></span> Twig</div>
+      <h2>One call<br>takes anything</h2>
+      <p class="lede">An asset, a URL, a handle, a document, or a field value.</p>
+      <ul class="points">
+        <li><span class="tick"></span><span class="t">The filter and the function are the same thing</span></li>
+        <li><span class="tick"></span><span class="t">Options at the call site beat the document’s own</span></li>
+        <li><span class="tick"></span><span class="t">A viewer’s knowledge sits under an author’s choice</span></li>
+      </ul>
+    </div>
+  </div>
+  <div class="code">
+    <div class="chrome">templates/_entry/report.twig</div>
+    <div class="body">
+      <div><span class="tag">{{</span> craft.book.<span class="fn">embed</span>(entry.brochure) <span class="tag">}}</span></div>
+      <div><span class="tag">{{</span> craft.book.<span class="fn">embed</span>(<span class="str">'annual-report'</span>) <span class="tag">}}</span></div>
+      <div><span class="tag">{{</span> craft.book.<span class="fn">embed</span>(<span class="str">'https://example.com/spec.pdf'</span>) <span class="tag">}}</span></div>
+      <span class="blank"></span>
+      <div><span class="tag">{{</span> asset<span class="fn">|book</span>({ viewer: <span class="str">'google'</span>, height: 900 }) <span class="tag">}}</span></div>
+      <span class="blank"></span>
+      <div><span class="cm">{# What would happen, before you publish #}</span></div>
+      <div><span class="tag">{%</span> set verdict = craft.book.<span class="fn">resolve</span>(entry.spec) <span class="tag">%}</span></div>
+      <div>&nbsp;&nbsp;verdict.viewer &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="fn">inline</span></div>
+      <div>&nbsp;&nbsp;verdict.isThirdParty&nbsp;&nbsp;<span class="fn">false</span></div>
+      <div>&nbsp;&nbsp;verdict.warnings &nbsp;&nbsp;&nbsp;<span class="cm">[ 'Google was skipped: …' ]</span></div>
+    </div>
+  </div>
+  <div class="footer"><img src="assets/icon.svg" alt=""> <b>Book</b> &nbsp;·&nbsp; justinholt.com/plugins/craft-book</div>
+</section>
+
+<script>
+  var n = new URLSearchParams(location.search).get('s');
+  if (n) {
+    document.body.classList.add('single');
+    var el = document.querySelector('.slide[data-n="' + n + '"]');
+    if (el) el.classList.add('active');
+  }
+</script>
+</body>
+</html>

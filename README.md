@@ -281,3 +281,10 @@ Four jobs, no dependencies, ~5 KB:
   Gotenberg, which is a different plugin with a very different dependency footprint.
 - **Fetching external URLs.** See the promise at the top.
 - **Full-text extraction** of document contents for search.
+
+---
+
+## Licence
+
+The Craft License. See `LICENSE.md`. Book is free: no editions, no licence key, and no licensing
+code in the plugin.
