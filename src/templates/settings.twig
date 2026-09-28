@@ -71,6 +71,17 @@
     }) }}
 </div>
 
+{{ forms.autosuggestField({
+    label: "Link secret"|t('book'),
+    instructions: "Mixed into every file link Book signs. Links to private files don’t expire unless URLs are signed, so change this to revoke every link Book has handed out — a forwarded one included. Use an environment variable, such as `$BOOK_LINK_SECRET`, so it can be changed without a deploy. Leave it empty to keep existing links working."|t('book'),
+    id: 'linkSecret',
+    name: 'linkSecret',
+    value: settings.linkSecret,
+    suggestEnvVars: true,
+    class: 'code',
+    errors: settings.getErrors('linkSecret'),
+}) }}
+
 <hr>
 
 <h2>{{ "Rendered by Book"|t('book') }}</h2>

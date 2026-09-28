@@ -4,6 +4,7 @@ namespace justinholtweb\book\models;
 
 use Craft;
 use craft\base\Model;
+use craft\helpers\App;
 
 /**
  * Plugin settings.
@@ -72,6 +73,18 @@ class Settings extends Model
     /** How long a signature lasts, in seconds. 0 means it never expires. */
     public int $signedUrlDuration = 86400;
 
+    /**
+     * An extra secret mixed into every file token, so they can all be revoked at once.
+     *
+     * Tokens for private-volume files never expire unless `signedUrls` is on (an expiring one would
+     * break every embed of it, later and silently), so a leaked link used to stay valid until the
+     * site's security key changed. Changing this invalidates every link Book has handed out without
+     * touching the security key. Empty — the default — signs exactly as before, so existing links
+     * keep working on upgrade. Accepts an environment variable, which is the way to use it: change
+     * `BOOK_LINK_SECRET` and every old link stops working, no deploy needed.
+     */
+    public string $linkSecret = '';
+
     // Inline rendering
     // -------------------------------------------------------------------------
 
@@ -104,7 +117,7 @@ class Settings extends Model
             ],
             [['signedUrlDuration'], 'integer', 'min' => 0],
             [['inlineMaxBytes'], 'integer', 'min' => 1024],
-            [['purifierConfig'], 'string'],
+            [['purifierConfig', 'linkSecret'], 'string'],
             [['defaultOptions'], 'safe'],
         ];
     }
@@ -121,9 +134,16 @@ class Settings extends Model
             'signedUrls' => Craft::t('book', 'Sign file URLs'),
             'signedUrlDuration' => Craft::t('book', 'Signature lifetime'),
             'inlineMaxBytes' => Craft::t('book', 'Inline size limit'),
+            'linkSecret' => Craft::t('book', 'Link secret'),
             'purifierConfig' => Craft::t('book', 'HTML Purifier config'),
             'richTextIntegration' => Craft::t('book', 'Rich-text editor button'),
         ];
+    }
+
+    /** {@see $linkSecret}, with any environment variable resolved. */
+    public function getLinkSecret(): string
+    {
+        return (string)(App::parseEnv($this->linkSecret) ?? '');
     }
 
     public function viewerIsAllowed(string $viewer): bool

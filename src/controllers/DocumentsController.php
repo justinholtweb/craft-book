@@ -57,7 +57,7 @@ class DocumentsController extends Controller
                 $url = $request->getQueryParam('url');
 
                 // “New from a file”: the index posts here, so the form opens already filled in.
-                if ($assetId && ($asset = Craft::$app->getAssets()->getAssetById((int)$assetId))) {
+                if ($asset = $this->viewableAsset($assetId)) {
                     $document = $plugin->documents->createFromAsset($asset);
                 } elseif ($url) {
                     $document = $plugin->documents->createFromUrl((string)$url);
@@ -115,13 +115,27 @@ class DocumentsController extends Controller
         $assetIds = $request->getBodyParam('assetId');
         $assetId = is_array($assetIds) ? (reset($assetIds) ?: null) : $assetIds;
 
+        $previousAssetId = $document->assetId;
         $document->assetId = $assetId ? (int)$assetId : null;
         $document->url = $document->assetId ? null : $request->getBodyParam('url');
+
+        // Choosing a file is only allowed for files this user can see. Checked only when the file
+        // changes, so somebody can still edit the title of a document whose file somebody else
+        // chose from a volume they have no access to.
+        $assetRefused = $document->assetId !== null
+            && $document->assetId !== $previousAssetId
+            && $this->viewableAsset($document->assetId) === null;
 
         $posted = $request->getBodyParam('options', []);
         $document->setOptions($document->getOptions()->merge(
             is_array($posted) ? $plugin->documents->normalizePostedOptions($posted) : []
         ));
+
+        if ($assetRefused) {
+            $document->addError('assetId', Craft::t('book', 'That file doesn’t exist, or you don’t have access to its volume.'));
+
+            return $this->asModelFailure($document, Craft::t('book', 'Couldn’t save document.'), 'document');
+        }
 
         if (!$plugin->documents->saveDocument($document)) {
             return $this->asModelFailure($document, Craft::t('book', 'Couldn’t save document.'), 'document');
@@ -173,7 +187,7 @@ class DocumentsController extends Controller
         $assetId = is_array($assetId) ? (reset($assetId) ?: null) : $assetId;
         $url = trim((string)$request->getBodyParam('url', ''));
 
-        if ($assetId && ($asset = Craft::$app->getAssets()->getAssetById((int)$assetId))) {
+        if ($asset = $this->viewableAsset($assetId)) {
             $source = Source::fromAsset($asset);
         } elseif ($url !== '') {
             $source = Source::fromUrl($url);
@@ -233,7 +247,7 @@ class DocumentsController extends Controller
         $url = trim((string)$request->getBodyParam('url', ''));
 
         if ($assetId) {
-            $asset = Craft::$app->getAssets()->getAssetById((int)$assetId);
+            $asset = $this->viewableAsset($assetId);
 
             if (!$asset) {
                 return $this->asFailure(Craft::t('book', 'That asset no longer exists.'));
@@ -292,6 +306,29 @@ class DocumentsController extends Controller
         return $this->asJson(['documents' => $documents]);
     }
 
+    /**
+     * The asset behind a posted ID, if it exists and the current user may see it.
+     *
+     * Every action here that takes an asset ID goes through this. A document renders its file —
+     * inline, or behind a freshly signed URL — so accepting any ID would let anyone with Book's
+     * view permission read files from volumes they have no access to, one ID at a time. A missing
+     * asset and a forbidden one get the same answer, so the IDs of private files don't leak.
+     */
+    private function viewableAsset(mixed $assetId): ?Asset
+    {
+        if (!$assetId || !is_numeric($assetId)) {
+            return null;
+        }
+
+        $asset = Craft::$app->getAssets()->getAssetById((int)$assetId);
+
+        if ($asset === null || !Craft::$app->getElements()->canView($asset)) {
+            return null;
+        }
+
+        return $asset;
+    }
+
     /** @return array<string, mixed> */
     private function documentPayload(Document $document): array
     {
@@ -321,7 +358,7 @@ class DocumentsController extends Controller
         $assetId = is_array($assetId) ? (reset($assetId) ?: null) : $assetId;
         $url = trim((string)$request->getBodyParam('url', ''));
 
-        if ($assetId && ($asset = Craft::$app->getAssets()->getAssetById((int)$assetId))) {
+        if ($asset = $this->viewableAsset($assetId)) {
             $source = Source::fromAsset($asset);
         } elseif ($url !== '') {
             $source = Source::fromUrl($url);

@@ -58,6 +58,7 @@ silently.
 | `serveAssetsThroughCraft` | `false` | Route every asset through Book, even public ones |
 | `signedUrls` | `false` | Add an expiring signature to the URLs Book serves |
 | `signedUrlDuration` | `86400` | How long a signature lasts, in seconds; `0` never expires |
+| `linkSecret` | `''` | Mixed into every token; change it to revoke every link Book has handed out |
 
 An asset in a volume with **no** public URLs is always served through Book's own route, with a
 token Book minted, whatever these are set to. That is not optional and it is what makes private
@@ -77,6 +78,23 @@ lifetime.
 Turning `signedUrls` on also forces public assets onto Book's route, because there is nowhere else
 to put a signature. That is deliberate: the setting used to be ignored for public assets, which
 made it look switched on and do nothing.
+
+### Revoking links
+
+A link to a private-volume file does not expire unless `signedUrls` is on, so a forwarded one keeps
+working. To revoke **every** link Book has handed out at once, change `linkSecret`. Set it from an
+environment variable so it can be changed without a deploy:
+
+```php
+// config/book.php
+return [
+    'linkSecret' => '$BOOK_LINK_SECRET',
+];
+```
+
+Then put a new random value in `BOOK_LINK_SECRET` whenever you need to. Pages rendered after the
+change get fresh links; cached pages and anything already shared stop working. Leaving it empty —
+the default — signs links exactly as Book always has, so upgrading does not break existing ones.
 
 ## Inline rendering
 

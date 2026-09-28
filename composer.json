@@ -1,7 +1,7 @@
 {
     "name": "justinholtweb/craft-book",
     "description": "Embed any document in Craft CMS — PDFs, Word, Excel, PowerPoint, OpenDocument, CSV, Markdown, images and more, in Twig or in rich text, with native, Google, Office or server-rendered viewers.",
-    "version": "5.0.0",
+    "version": "5.0.1",
     "type": "craft-plugin",
     "keywords": [
         "craftcms",

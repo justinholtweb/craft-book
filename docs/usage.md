@@ -251,3 +251,7 @@ Four jobs, no dependencies, about 5 KB:
 ## Permissions
 
 `book:viewDocuments`, with `book:manageDocuments` and `book:deleteDocuments` nested under it.
+
+None of them grants access to files. Choosing, previewing or embedding an asset — in the Documents
+library or in a Document field — also needs Craft's own permission to view that asset's volume, so
+Book cannot be used to read files from a volume an editor has no access to.

@@ -24,4 +24,7 @@ return [
     'File not found.' => 'File not found.',
     'This link is no longer valid.' => 'This link is no longer valid.',
     'This file is not available at this address.' => 'This file is not available at this address.',
+    'That file doesn’t exist, or you don’t have access to its volume.' => 'That file doesn’t exist, or you don’t have access to its volume.',
+    'Link secret' => 'Link secret',
+    'Mixed into every file link Book signs. Links to private files don’t expire unless URLs are signed, so change this to revoke every link Book has handed out — a forwarded one included. Use an environment variable, such as `$BOOK_LINK_SECRET`, so it can be changed without a deploy. Leave it empty to keep existing links working.' => 'Mixed into every file link Book signs. Links to private files don’t expire unless URLs are signed, so change this to revoke every link Book has handed out — a forwarded one included. Use an environment variable, such as `$BOOK_LINK_SECRET`, so it can be changed without a deploy. Leave it empty to keep existing links working.',
 ];

@@ -388,6 +388,34 @@ check('extending the expiry of a token invalidates it', function() use ($plugin)
     return !$plugin->delivery->verify($tampered, 'abc-123')['valid'];
 });
 
+check('with no link secret, tokens are signed exactly as 5.0.0 signed them', function() use ($plugin) {
+    // Links already published in pages, emails and PDFs have to keep working after an upgrade.
+    $key = Craft::$app->getConfig()->getGeneral()->securityKey;
+    $legacy = hash_hmac('sha256', implode('|', ['book', 'abc-123', 'inline', 'public', 0]), $key);
+    $token = withSettings(['linkSecret' => ''], fn() => $plugin->delivery->sign('abc-123', Delivery::DISPOSITION_INLINE, 'public', 0));
+
+    return $token === "0.public.inline.$legacy" ?: $token;
+});
+
+check('setting a link secret revokes every link signed before it, and signs new ones', function() use ($plugin) {
+    $old = $plugin->delivery->sign('abc-123', Delivery::DISPOSITION_INLINE, 'public', 0);
+
+    putenv('BOOK_CHECK_LINK_SECRET=rotated-' . bin2hex(random_bytes(4)));
+
+    try {
+        return withSettings(['linkSecret' => '$BOOK_CHECK_LINK_SECRET'], function() use ($plugin, $old) {
+            $new = $plugin->delivery->sign('abc-123', Delivery::DISPOSITION_INLINE, 'public', 0);
+
+            return !$plugin->delivery->verify($old, 'abc-123')['valid']
+                && $plugin->delivery->verify($new, 'abc-123')['valid']
+                && $new !== $old
+                ?: 'old valid=' . var_export($plugin->delivery->verify($old, 'abc-123')['valid'], true);
+        });
+    } finally {
+        putenv('BOOK_CHECK_LINK_SECRET');
+    }
+});
+
 check('a missing or malformed token fails closed, at the strictest access', function() use ($plugin) {
     foreach ([null, '', 'nonsense', '0.public.inline', '0.mystery.inline.abcd'] as $token) {
         $result = $plugin->delivery->verify($token, 'abc-123');
@@ -734,6 +762,80 @@ check('a format Book cannot read is refused before anything is opened', function
 });
 
 // -----------------------------------------------------------------------------
+section('The Document field: whose files it will take');
+
+// A Document field's value is just an asset ID once it reaches the server. Until 5.0.1 any ID was
+// accepted, so an editor with no access to a private volume could embed its files by number.
+$fieldAsset = makeAsset('field-check.pdf', "%PDF-1.4\n%%EOF\n");
+$field = new \justinholtweb\book\fields\DocumentField(['handle' => 'bookCheckDoc']);
+$withValue = static function(?int $assetId): craft\elements\Entry {
+    return new class($assetId) extends craft\elements\Entry {
+        public function __construct(private ?int $bookAssetId)
+        {
+            parent::__construct();
+        }
+
+        public function getFieldValue(string $fieldHandle): mixed
+        {
+            return InlineDocument::fromValue(['assetId' => $this->bookAssetId]);
+        }
+    };
+};
+$fieldUser = new craft\elements\User();
+$fieldUser->username = "book-check-$suffix";
+$fieldUser->email = "book-check-$suffix@example.com";
+Craft::$app->getElements()->saveElement($fieldUser, false);
+
+$validateAs = static function(?craft\elements\User $user, craft\elements\Entry $element) use ($field): bool {
+    $identity = Craft::$app->getUser()->getIdentity();
+    Craft::$app->getUser()->setIdentity($user);
+
+    try {
+        $field->validateAsset($element);
+    } finally {
+        Craft::$app->getUser()->setIdentity($identity);
+    }
+
+    return !$element->hasErrors();
+};
+
+check('a console job with nobody signed in may choose any file', function() use ($validateAs, $withValue, $fieldAsset) {
+    return $validateAs(null, $withValue((int)$fieldAsset->id)) ?: 'refused';
+});
+
+check('an editor cannot choose a file from a volume they cannot view', function() use ($validateAs, $withValue, $fieldAsset, $fieldUser) {
+    Craft::$app->getUserPermissions()->saveUserPermissions($fieldUser->id, ['accesscp']);
+
+    return !$validateAs($fieldUser, $withValue((int)$fieldAsset->id)) ?: 'accepted';
+});
+
+check('the same editor can, once they may view that volume', function() use ($validateAs, $withValue, $fieldAsset, $fieldUser) {
+    // All three, as a real editor would have: Craft 5 only lets a user view files somebody else
+    // uploaded with the "peer" permission, and on a multi-site install only on sites they can edit.
+    $volumeUid = $fieldAsset->getVolume()->uid;
+    $siteUid = Craft::$app->getSites()->getSiteById($fieldAsset->siteId)->uid;
+    Craft::$app->getUserPermissions()->saveUserPermissions($fieldUser->id, [
+        'accesscp', "editsite:$siteUid", "viewassets:$volumeUid", "viewpeerassets:$volumeUid",
+    ]);
+    $fresh = Craft::$app->getUsers()->getUserById($fieldUser->id);
+
+    return $validateAs($fresh, $withValue((int)$fieldAsset->id)) ?: 'refused';
+});
+
+check('a file outside the field’s own volumes is refused, whoever chooses it', function() use ($validateAs, $withValue, $fieldAsset, $field) {
+    $field->sources = ['not-a-volume-uid'];
+
+    try {
+        return !$validateAs(null, $withValue((int)$fieldAsset->id)) ?: 'accepted';
+    } finally {
+        $field->sources = [];
+    }
+});
+
+check('an ID that is not an asset is refused', function() use ($validateAs, $withValue) {
+    return !$validateAs(null, $withValue(999999999)) ?: 'accepted';
+});
+
 section('The Document element');
 
 $document = makeDocument(['assetId' => $pdf->id, 'title' => "Annual report $suffix"]);
@@ -1042,6 +1144,10 @@ foreach (Document::find()->status(null)->siteId('*')->unique()->all() as $stray)
         Craft::$app->getElements()->deleteElement($stray, true);
         $leftovers++;
     }
+}
+
+foreach (craft\elements\User::find()->username('book-check-*')->status(null)->all() as $strayUser) {
+    Craft::$app->getElements()->deleteElement($strayUser, true);
 }
 
 foreach ($assets as $asset) {

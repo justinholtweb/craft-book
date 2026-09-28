@@ -132,6 +132,14 @@ stops Book turning an unguessable UID into a way around volume permissions.
 - **The asset FK is `SET NULL`, not `CASCADE`.** Deleting an asset leaves the document standing
   with a visible "the file is gone" state rather than silently deleting content pages reference.
 
+- **Book permissions are not file permissions.** Every action or field that takes an asset ID must
+  check `Elements::canView($asset)` — until 5.0.1 `book:viewDocuments` could read any volume by ID.
+  Note what `canView` actually needs on Craft 5: `viewPeerAssets:<volume>` for files somebody else
+  uploaded (`viewAssets` alone only covers your own), and `editSite:<site>` on a multi-site install.
+- **Never change the HMAC input unconditionally.** Published pages, emails and PDFs carry tokens
+  signed the old way; `linkSecret` is only mixed in when it is set, which is why an upgrade breaks
+  no links.
+
 See also `[[craft-plugin-gotchas]]` in the shared memory for family-wide traps.
 
 ## Testing
@@ -139,7 +147,8 @@ See also `[[craft-plugin-gotchas]]` in the shared memory for family-wide traps.
 No local PHP on this Mac. Everything runs inside the plugin-testing container:
 
 ```sh
-docker exec -w /var/www/html ddev-plugin-testing-web php /var/www/craft-book/tests/integration/checks.php   # 98 checks
+docker exec -w /var/www/html ddev-plugin-testing-web php /var/www/craft-book/tests/integration/checks.php   # 105 checks
+docker exec -w /var/www/html ddev-plugin-testing-web php /var/www/craft-book/tests/integration/trust.php    # 6 checks, an editor without volume access, over HTTP
 docker exec ddev-plugin-testing-web bash -c 'find /var/www/craft-book/src -name "*.php" -print0 | xargs -0 -n1 php -l'
 ```
 

@@ -1,5 +1,21 @@
 # Changelog
 
+## 5.0.1 — 2026-09-28
+
+### Security
+
+- Fixed a vulnerability where anyone with Book's view permission could preview, resolve or embed
+  any asset by ID, including files in volumes they had no access to — and see their contents, or a
+  signed link to them. Every Documents action that takes an asset now requires Craft's permission to
+  view it, and a Document field refuses a file the editor can't view or that is outside the field's
+  own volumes. A missing asset and a forbidden one get the same answer.
+
+### Added
+
+- A `linkSecret` setting, mixed into every file token. Changing it revokes every link Book has
+  handed out, which previously needed the site's security key to change. It accepts an environment
+  variable, and when empty (the default) links are signed exactly as before.
+
 ## 5.0.0 — 2026-08-23
 
 Initial release.

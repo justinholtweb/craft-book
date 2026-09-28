@@ -225,8 +225,17 @@ class Delivery extends Component
     private function hmac(string $uid, string $disposition, string $access, int $expires): string
     {
         $key = Craft::$app->getConfig()->getGeneral()->securityKey;
+        $parts = ['book', $uid, $disposition, $access, $expires];
 
-        return hash_hmac('sha256', implode('|', ['book', $uid, $disposition, $access, $expires]), $key);
+        // Only when set, so that a site which has never used it keeps every link it already
+        // published. Setting or changing it is how every outstanding link is revoked at once.
+        $secret = Plugin::getInstance()->getSettings()->getLinkSecret();
+
+        if ($secret !== '') {
+            $parts[] = $secret;
+        }
+
+        return hash_hmac('sha256', implode('|', $parts), $key);
     }
 
     // Reachability

@@ -128,6 +128,64 @@ class DocumentField extends Field
         return $document;
     }
 
+    public function getElementValidationRules(): array
+    {
+        return ['validateAsset'];
+    }
+
+    /**
+     * The chosen file has to be one this field allows and this editor can see.
+     *
+     * The picker only offers the field's volumes, and only volumes the editor can view, but the
+     * value that reaches the server is just an ID. Without this, anybody who can edit the entry
+     * could post the ID of a file in a private volume and have it rendered — through a signed URL —
+     * to everyone who visits the page. Checked only when the file changes, so an editor can still
+     * save an entry whose file somebody with wider access chose.
+     */
+    public function validateAsset(ElementInterface $element): void
+    {
+        $document = $element->getFieldValue($this->handle);
+
+        if (!$document instanceof InlineDocument || $document->assetId === null) {
+            return;
+        }
+
+        if ($document->assetId === $this->storedAssetId($element)) {
+            return;
+        }
+
+        $asset = Craft::$app->getAssets()->getAssetById($document->assetId);
+        $user = Craft::$app->getUser()->getIdentity();
+
+        // A console command or queue job with nobody signed in is trusted — it runs as whoever has
+        // shell access. Everyone else, including a guest posting a front-end entry form, has to be
+        // able to view the file they are choosing.
+        $trusted = $user === null && Craft::$app->getRequest()->getIsConsoleRequest();
+
+        $allowed = $asset !== null
+            && ($this->sources === [] || in_array($asset->getVolume()->uid, $this->sources, true))
+            && ($trusted || Craft::$app->getElements()->canView($asset, $user));
+
+        if (!$allowed) {
+            $element->addError("field:$this->handle", Craft::t('book', 'That file doesn’t exist, or you don’t have access to its volume.'));
+        }
+    }
+
+    /** The file this field held when the element was last saved, if it has been. */
+    private function storedAssetId(ElementInterface $element): ?int
+    {
+        $id = $element->getCanonicalId();
+
+        if (!$id) {
+            return null;
+        }
+
+        $stored = Craft::$app->getElements()->getElementById($id, get_class($element), $element->siteId);
+        $value = $stored?->getFieldValue($this->handle);
+
+        return $value instanceof InlineDocument ? $value->assetId : null;
+    }
+
     public function serializeValue(mixed $value, ?ElementInterface $element = null): mixed
     {
         $document = $value instanceof InlineDocument ? $value : InlineDocument::fromValue($value);
