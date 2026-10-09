@@ -88,6 +88,15 @@ not a viewer; it is the resolution.
 Unsigned requests may only ever reach an asset that already has a public volume URL. That is what
 stops Book turning an unguessable UID into a way around volume permissions.
 
+### GraphQL
+
+`src/gql/` follows Craft's own element shape (interface + generator + type + resolver + arguments).
+One type, `BookDocument`, because documents have no field layout; one schema component,
+`bookDocuments.all:read` (`DocumentQueries::SCOPE`). The resolver pins `status` to enabled.
+`RenderArguments::LOCKED` strips `access` and `serveThroughCraft` from every per-call override —
+a query is written by a token holder, not the site, and must never be able to re-sign a
+login-gated file as public. `warnings`/`fallbackReason` are devMode-only, like on the page.
+
 ## Traps found while building this
 
 - **A plugin settings template is already namespaced.** `craft\base\Plugin::settingsResponse()`
@@ -140,6 +149,19 @@ stops Book turning an unguessable UID into a way around volume permissions.
   signed the old way; `linkSecret` is only mixed in when it is set, which is why an upgrade breaks
   no links.
 
+- **Inline rendering is delivery too.** The file route enforces `access: login` on a link, but
+  the `inline` viewer writes the file's contents straight into the page, so until the GraphQL work
+  a login-gated CSV was readable by any guest. `Viewers::rejectionReason()` now rules `inline` out
+  for a guest on a login-gated document.
+- **GraphQL in one process.** Craft builds its type registry once per process; `Gql::flushCaches()`
+  then a second `executeQuery()` fails with "multiple types named QueryArgument". The GraphQL
+  checks run themselves once per scenario as child processes. Craft also drops an unknown root
+  field silently (`data: []`), so "not exposed" is asserted by absence, not by an error.
+- **`getEagerLoadingGqlConditions()` values must be arrays** (Craft `array_intersect`s them), and
+  `null` means "nothing" while `[]` means "no conditions".
+- **Expiring URLs and caches.** `Elements::setCacheExpiryDate()` is how anything being rendered
+  shortens the GraphQL / `{% cache %}` entry holding it; `Delivery::craftUrl()` calls it.
+
 See also `[[craft-plugin-gotchas]]` in the shared memory for family-wide traps.
 
 ## Testing
@@ -149,6 +171,7 @@ No local PHP on this Mac. Everything runs inside the plugin-testing container:
 ```sh
 docker exec -w /var/www/html ddev-plugin-testing-web php /var/www/craft-book/tests/integration/checks.php   # 105 checks
 docker exec -w /var/www/html ddev-plugin-testing-web php /var/www/craft-book/tests/integration/trust.php    # 6 checks, an editor without volume access, over HTTP
+docker exec -w /var/www/html ddev-plugin-testing-web php /var/www/craft-book/tests/integration/graphql.php  # 29 checks, real executeQuery() per schema, one child process each
 docker exec ddev-plugin-testing-web bash -c 'find /var/www/craft-book/src -name "*.php" -print0 | xargs -0 -n1 php -l'
 ```
 

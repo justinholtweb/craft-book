@@ -200,7 +200,7 @@ whichever options the field's settings expose. `{{ entry.brochure }}` renders it
 call needed.
 
 **Documents** — a plain relation field to library documents. Everything you expect from a relation
-field works, because it is one.
+field works, because it is one. Over GraphQL it resolves to `[BookDocumentInterface]` — see [GraphQL](graphql).
 
 ## Private documents
 
@@ -217,7 +217,8 @@ URL, where serving it changes nothing.
 Per document:
 
 - `access: 'public'` — anyone with the link, and the link is an unguessable UID
-- `access: 'login'` — a logged-in user; guests are sent to the login screen
+- `access: 'login'` — a logged-in user; guests are sent to the login screen; a text-shaped file that
+  Book would render inline shows a guest the download card instead of its contents
 
 Site-wide, see [Configuration](configuration).
 

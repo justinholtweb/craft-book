@@ -6,17 +6,23 @@ use Craft;
 use craft\base\Model;
 use craft\base\Plugin as BasePlugin;
 use craft\events\RegisterComponentTypesEvent;
+use craft\events\RegisterGqlQueriesEvent;
+use craft\events\RegisterGqlSchemaComponentsEvent;
+use craft\events\RegisterGqlTypesEvent;
 use craft\events\RegisterUrlRulesEvent;
 use craft\events\RegisterUserPermissionsEvent;
 use craft\helpers\FileHelper;
 use craft\services\Elements;
 use craft\services\Fields;
+use craft\services\Gql;
 use craft\services\UserPermissions;
 use craft\web\twig\variables\CraftVariable;
 use craft\web\UrlManager;
 use justinholtweb\book\elements\Document;
 use justinholtweb\book\fields\DocumentField;
 use justinholtweb\book\fields\DocumentsField;
+use justinholtweb\book\gql\DocumentQueries;
+use justinholtweb\book\gql\interfaces\DocumentInterface;
 use justinholtweb\book\models\Settings;
 use justinholtweb\book\services\Delivery;
 use justinholtweb\book\services\Documents;
@@ -87,6 +93,7 @@ class Plugin extends BasePlugin
         $this->registerRoutes();
         $this->registerPermissions();
         $this->registerTwig();
+        $this->registerGraphQl();
         $this->registerRichTextIntegrations();
     }
 
@@ -209,6 +216,33 @@ class Plugin extends BasePlugin
         });
 
         Craft::$app->getView()->registerTwigExtension(new Extension());
+    }
+
+    /**
+     * `bookDocuments` / `bookDocument` / `bookDocumentCount`, behind one schema permission.
+     *
+     * One component rather than one per volume or format: a document is a library entry, not a
+     * file, and the file's own visibility is already the document's access rule — which every
+     * URL GraphQL hands out still carries. See {@see \justinholtweb\book\gql\RenderArguments}
+     * for why a query cannot change that rule.
+     */
+    private function registerGraphQl(): void
+    {
+        Event::on(Gql::class, Gql::EVENT_REGISTER_GQL_TYPES, function(RegisterGqlTypesEvent $event) {
+            $event->types[] = DocumentInterface::class;
+        });
+
+        Event::on(Gql::class, Gql::EVENT_REGISTER_GQL_QUERIES, function(RegisterGqlQueriesEvent $event) {
+            $event->queries = array_merge($event->queries, DocumentQueries::getQueries());
+        });
+
+        Event::on(Gql::class, Gql::EVENT_REGISTER_GQL_SCHEMA_COMPONENTS, function(RegisterGqlSchemaComponentsEvent $event) {
+            $event->queries[Craft::t('book', 'Book')] = [
+                DocumentQueries::SCOPE . ':read' => [
+                    'label' => Craft::t('book', 'Query for documents'),
+                ],
+            ];
+        });
     }
 
     /**

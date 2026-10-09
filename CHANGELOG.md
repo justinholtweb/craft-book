@@ -1,5 +1,25 @@
 # Changelog
 
+## Unreleased
+
+### Added
+
+- **GraphQL.** `bookDocuments`, `bookDocument` and `bookDocumentCount` queries, behind a new
+  **Book → Query for documents** schema permission. A `BookDocument` carries the file's facts, the
+  viewer resolution (`resolution { viewer frameUrl … }`), `fileUrl` and `downloadUrl` signed
+  afresh for each request, and the rendered `html(…)`, which takes the same options as a reference
+  tag. Only enabled documents are returned, a query cannot change a document's access rule, and
+  the author-facing warnings stay hidden outside dev mode, as they do on the page.
+- Documents relation fields now work in GraphQL, as `[BookDocumentInterface]`, in schemas that may
+  read documents.
+
+### Fixed
+
+- A login-gated CSV, Markdown, JSON or text document rendered inline wrote its contents into the
+  page for guests too. A guest now gets the download card, whose link asks them to log in.
+- A cached response — a `{% cache %}` block, or a GraphQL response — could outlive the expiring
+  signed URLs inside it. Book now shortens the cache to half the signature's lifetime.
+
 ## 5.0.1 — 2026-09-28
 
 ### Security

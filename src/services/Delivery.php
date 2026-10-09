@@ -5,6 +5,7 @@ namespace justinholtweb\book\services;
 use Craft;
 use craft\base\Component;
 use craft\helpers\UrlHelper;
+use DateTime;
 use justinholtweb\book\models\DocumentOptions;
 use justinholtweb\book\models\Source;
 use justinholtweb\book\Plugin;
@@ -140,11 +141,33 @@ class Delivery extends Component
                 : 0;
 
             $params[self::PARAM] = $this->sign($asset->uid, $disposition, $options->access, $expires);
+
+            if ($expires > 0) {
+                $this->limitCacheLifetime($expires);
+            }
         } elseif ($disposition === self::DISPOSITION_ATTACHMENT) {
             $params['dl'] = 1;
         }
 
         return UrlHelper::siteUrl($path, $params ?: null);
+    }
+
+    /**
+     * Keeps a cached response from outliving the signatures inside it.
+     *
+     * A GraphQL response and a `{% cache %}` block are both cached by Craft for as long as it
+     * likes — a day, by default, which is also the default signature lifetime — so an expiring
+     * URL could be served from cache after it had stopped working. Craft lets whatever is being
+     * rendered shorten that, and is a no-op when nothing is collecting. Half the lifetime, so a
+     * cached URL always has at least half of its own left when somebody is handed it.
+     */
+    private function limitCacheLifetime(int $expires): void
+    {
+        $remaining = $expires - time();
+
+        if ($remaining > 0) {
+            Craft::$app->getElements()->setCacheExpiryDate(new DateTime('@' . (time() + max(1, intdiv($remaining, 2)))));
+        }
     }
 
     /** Whether a URL Book minted for this file will carry a token. */

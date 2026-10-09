@@ -153,6 +153,13 @@ class Viewers extends Component
             return Craft::t('book', 'Book can only read a file it holds as an asset, so it cannot render this URL itself.');
         }
 
+        // Book reading the file *is* Book handing its contents to the reader, so the access rule
+        // has to be asked here — the file route asks it of a link, and an inlined CSV has no link.
+        // A guest gets the download card, whose URL sends them to log in.
+        if ($viewer->requiresAsset && $options->access === DocumentOptions::ACCESS_LOGIN && !$this->hasLoggedInUser()) {
+            return Craft::t('book', 'This document requires a login, and nobody is logged in, so Book will not write its contents into the page.');
+        }
+
         if ($viewer->requiresAsset && $source->size !== null && $source->size > $settings->inlineMaxBytes) {
             return Craft::t('book', 'This file is larger than Book’s inline limit of {limit} bytes.', [
                 'limit' => $settings->inlineMaxBytes,
@@ -176,6 +183,15 @@ class Viewers extends Component
         }
 
         return null;
+    }
+
+    /**
+     * A console request (a resave, a queue job warming a cache) has nobody logged in, so it
+     * renders as a guest would — the safe way to be wrong.
+     */
+    private function hasLoggedInUser(): bool
+    {
+        return !Craft::$app->getUser()->getIsGuest();
     }
 
     /**

@@ -189,7 +189,8 @@ published at its own volume URL, where serving it changes nothing.
 Per document:
 
 - `access: 'public'` — anyone with the link (the link is an unguessable UID)
-- `access: 'login'` — a logged-in user; guests are sent to the login screen
+- `access: 'login'` — a logged-in user; guests are sent to the login screen; a text-shaped file that
+  Book would render inline shows a guest the download card instead of its contents
 
 Site-wide, in the settings:
 
@@ -209,6 +210,12 @@ whichever options the field's settings expose. `{{ entry.brochure }}` renders it
 
 **Documents** — a plain relation field to library documents. Everything you expect from a relation
 field works, because it is one.
+
+**GraphQL** — `bookDocuments`, `bookDocument` and `bookDocumentCount`, behind one schema
+permission (**Book → Query for documents**). Each document carries its file facts, the viewer
+resolution, freshly signed `fileUrl`/`downloadUrl`, and `html(…)` taking the same options as a
+reference tag. A query can't change a document's `access` rule, only enabled documents are
+returned, and a Documents field resolves to the same type. See `docs/graphql.md`.
 
 ---
 

@@ -10,7 +10,9 @@ use craft\elements\User;
 use craft\helpers\Cp;
 use craft\helpers\Html;
 use craft\helpers\UrlHelper;
+use GraphQL\Type\Definition\Type;
 use justinholtweb\book\elements\db\DocumentQuery;
+use justinholtweb\book\gql\interfaces\DocumentInterface;
 use justinholtweb\book\models\DocumentOptions;
 use justinholtweb\book\models\Format;
 use justinholtweb\book\models\Source;
@@ -126,6 +128,31 @@ class Document extends Element
     public static function find(): ElementQueryInterface
     {
         return new DocumentQuery(static::class);
+    }
+
+    // GraphQL
+    // -------------------------------------------------------------------------
+
+    /** One type for every document: they share one row shape and have no field layout. */
+    public static function gqlTypeName(): string
+    {
+        return 'BookDocument';
+    }
+
+    public static function baseGqlType(): Type
+    {
+        return DocumentInterface::getType();
+    }
+
+    /** The schema component that unlocks documents — see {@see \justinholtweb\book\gql\DocumentQueries}. */
+    public static function gqlScopesByContext(mixed $context): array
+    {
+        return ['bookDocuments.all'];
+    }
+
+    public function getGqlTypeName(): string
+    {
+        return static::gqlTypeName();
     }
 
     // Options
