@@ -1,7 +1,6 @@
 # Changelog
 
-## Unreleased
-
+## 5.1.0 — 2026-10-09
 ### Added
 
 - **GraphQL.** `bookDocuments`, `bookDocument` and `bookDocumentCount` queries, behind a new
